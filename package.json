@@ -11,13 +11,13 @@
 	"engines": {
 		"node": ">=18.0.0"
 	},
-	"homepage": "https://github.com/neosianexus/quality#readme",
+	"homepage": "https://github.com/NeosiaNexus/quality#readme",
 	"bugs": {
-		"url": "https://github.com/neosianexus/quality/issues"
+		"url": "https://github.com/NeosiaNexus/quality/issues"
 	},
 	"funding": {
 		"type": "github",
-		"url": "https://github.com/sponsors/neosianexus"
+		"url": "https://github.com/sponsors/NeosiaNexus"
 	},
 	"exports": {
 		".": "./biome.json",
@@ -80,7 +80,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/neosianexus/quality.git"
+		"url": "git+https://github.com/NeosiaNexus/quality.git"
 	},
 	"peerDependencies": {
 		"@biomejs/biome": "^2.0.0",
