@@ -227,7 +227,7 @@ function executeInit(options: InitOptions): void {
 			const spinner = p.spinner();
 			spinner.start(`Installation des dépendances (${packageManager})...`);
 
-			const [cmd, ...baseArgs] = pmCommands.addDev;
+			const [cmd, ...baseArgs] = pmCommands.addDev as [string, ...string[]];
 			const result = runCommand(cmd, [...baseArgs, ...deps], cwd);
 
 			if (result.success) {
@@ -299,7 +299,7 @@ function executeInit(options: InitOptions): void {
 
 		// Install knip
 		if (!dryRun) {
-			const [cmd, ...baseArgs] = pmCommands.addDev;
+			const [cmd, ...baseArgs] = pmCommands.addDev as [string, ...string[]];
 			runCommand(cmd, [...baseArgs, "knip"], cwd);
 		}
 	}

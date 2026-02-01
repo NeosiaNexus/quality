@@ -36,7 +36,7 @@ function smartMerge<T extends Record<string, unknown>>(defaults: T, userConfig: 
 		arrayMerge: (_target, source) => source,
 		// Clone objects to avoid mutation
 		clone: true,
-	});
+	}) as T;
 }
 
 /**
@@ -76,7 +76,7 @@ function analyzeChanges(
 function upgradeConfigFile(
 	config: ConfigFile,
 	options: { force: boolean; dryRun: boolean; backup: boolean },
-): Promise<{ upgraded: boolean; backupPath: string | null }> {
+): { upgraded: boolean; backupPath: string | null } {
 	if (!config.currentContent) {
 		// File doesn't exist, just create it
 		if (!options.dryRun) {
@@ -294,7 +294,10 @@ export const upgradeCommand = defineCommand({
 
 			const scripts = (packageJson.scripts as Record<string, string>) || {};
 			for (const name of missingScripts) {
-				scripts[name] = newScripts[name];
+				const script = newScripts[name];
+				if (script) {
+					scripts[name] = script;
+				}
 			}
 			packageJson.scripts = scripts;
 
