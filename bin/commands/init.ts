@@ -8,6 +8,7 @@ import {
 	detectProjectType,
 	fileExists,
 	generateBiomeConfig,
+	generateClaudeMd,
 	generateCommitlintConfig,
 	generateCommitMsgHook,
 	generateKnipConfig,
@@ -37,6 +38,7 @@ interface InitOptions {
 	husky: boolean;
 	vscode: boolean;
 	knip: boolean;
+	claudeMd: boolean;
 	force: boolean;
 	dryRun: boolean;
 }
@@ -119,6 +121,11 @@ async function promptInitOptions(defaults: {
 					message: "Ajouter Knip (détection de code mort) ?",
 					initialValue: true,
 				}),
+			claudeMd: () =>
+				p.confirm({
+					message: "Créer CLAUDE.md (instructions pour Claude Code) ?",
+					initialValue: true,
+				}),
 		},
 		{
 			onCancel: () => {
@@ -135,8 +142,18 @@ async function promptInitOptions(defaults: {
  * Execute the init command
  */
 function executeInit(options: InitOptions): void {
-	const { cwd, packageManager, projectType, commitlint, husky, vscode, knip, force, dryRun } =
-		options;
+	const {
+		cwd,
+		packageManager,
+		projectType,
+		commitlint,
+		husky,
+		vscode,
+		knip,
+		claudeMd,
+		force,
+		dryRun,
+	} = options;
 	const pmCommands = getPackageManagerCommands(packageManager);
 
 	// Track what we're doing
@@ -320,6 +337,25 @@ function executeInit(options: InitOptions): void {
 		}
 	}
 
+	// 8. Create CLAUDE.md
+	if (claudeMd) {
+		const claudeMdPath = join(cwd, "CLAUDE.md");
+		if (!fileExists(claudeMdPath) || force) {
+			if (!dryRun) {
+				writeFile(
+					claudeMdPath,
+					generateClaudeMd({
+						projectType,
+						commitlint,
+						knip,
+						packageManager,
+					}),
+				);
+			}
+			tasks.push("CLAUDE.md");
+		}
+	}
+
 	return;
 }
 
@@ -363,6 +399,16 @@ export const initCommand = defineCommand({
 			description: "Add Knip for dead code detection",
 			default: undefined,
 		},
+		"claude-md": {
+			type: "boolean",
+			description: "Create CLAUDE.md for Claude Code instructions",
+			default: undefined,
+		},
+		"skip-claude-md": {
+			type: "boolean",
+			description: "Skip CLAUDE.md creation",
+			default: false,
+		},
 		"dry-run": {
 			type: "boolean",
 			alias: "d",
@@ -393,6 +439,7 @@ export const initCommand = defineCommand({
 				husky: !args["skip-husky"],
 				vscode: !args["skip-vscode"],
 				knip: args.knip ?? true,
+				claudeMd: args["claude-md"] ?? !args["skip-claude-md"],
 				force: args.force,
 				dryRun: args["dry-run"],
 			};
@@ -444,6 +491,10 @@ export const initCommand = defineCommand({
 							`  ${pc.green("docs")}: documentation`,
 						].join("\n")
 					: `${pc.dim("Tip: Ajoutez commitlint avec")} quality init --commitlint`,
+				"",
+				options.claudeMd
+					? `${pc.cyan("CLAUDE.md créé")} ${pc.dim("- Instructions pour Claude Code")}`
+					: `${pc.dim("Tip: Ajoutez CLAUDE.md avec")} quality init --claude-md`,
 			]
 				.filter(Boolean)
 				.join("\n"),

@@ -375,6 +375,80 @@ function getLintStagedConfig() {
     "*.{js,jsx,ts,tsx,json,css,md}": ["biome check --write --no-errors-on-unmatched"]
   };
 }
+function generateClaudeMd(options) {
+  const { projectType, commitlint, knip, packageManager } = options;
+  const pm = packageManager === "npm" ? "npm run" : packageManager;
+  const sections = [];
+  sections.push(`# Project Quality Configuration
+
+This project uses \`@neosianexus/quality\` with ultra-strict TypeScript and Biome.`);
+  const commands = [
+    `${pm} check      # Lint + Format (Biome)`,
+    `${pm} typecheck  # TypeScript strict mode`
+  ];
+  if (knip) {
+    commands.push(`${pm} knip       # Dead code detection`);
+  }
+  sections.push(`## Verification Commands
+
+IMPORTANT: Always run these before committing:
+
+\`\`\`bash
+${commands.join("\n")}
+\`\`\``);
+  sections.push(`## Critical TypeScript Rules
+
+This project uses ultra-strict TypeScript. You MUST:
+
+- \`noUncheckedIndexedAccess\`: Always check array/object access (\`arr[0]?.value\`)
+- \`exactOptionalPropertyTypes\`: \`undefined\` must be explicit for optional props
+- \`noImplicitAny\`: Never use implicit \`any\`, always type explicitly
+- \`verbatimModuleSyntax\`: Use \`import type { X }\` for type-only imports`);
+  let biomeRules = `## Biome Rules (replaces ESLint + Prettier)
+
+- NO \`forEach\` \u2192 use \`for...of\` or \`map\`
+- NO CommonJS \u2192 use ES modules (\`import\`/\`export\`)
+- NO non-null assertions (\`!\`) \u2192 use proper null checks
+- NO implicit \`any\` \u2192 always type explicitly
+- Max 15 cognitive complexity per function
+- Max 4 parameters per function`;
+  if (projectType === "nextjs") {
+    biomeRules += `
+- Default exports allowed ONLY for Next.js pages/layouts/routes`;
+  } else {
+    biomeRules += `
+- NO default exports (use named exports)`;
+  }
+  sections.push(biomeRules);
+  sections.push(`## Code Style (enforced automatically)
+
+- Indentation: Tabs (2-space width)
+- Quotes: Double quotes (\`"\`)
+- Semicolons: Always
+- Line width: 100 characters
+- Trailing commas: Everywhere`);
+  if (commitlint) {
+    sections.push(`## Commit Format (Conventional Commits)
+
+\`\`\`
+<type>(<scope>): <subject>
+\`\`\`
+
+Types: \`feat\` | \`fix\` | \`docs\` | \`style\` | \`refactor\` | \`perf\` | \`test\` | \`build\` | \`ci\` | \`chore\``);
+  }
+  let fileNaming = `## File Naming
+
+- Components: \`PascalCase.tsx\` (e.g., \`UserCard.tsx\`)
+- Utilities: \`camelCase.ts\` (e.g., \`formatDate.ts\`)
+- Configs: \`kebab-case\` (e.g., \`next.config.ts\`)`;
+  if (projectType === "nextjs") {
+    fileNaming += `
+- Routes: \`page.tsx\`, \`layout.tsx\`, \`route.ts\``;
+  }
+  sections.push(fileNaming);
+  return `${sections.join("\n\n")}
+`;
+}
 
 // bin/commands/init.ts
 async function promptInitOptions(defaults) {
@@ -442,6 +516,10 @@ async function promptInitOptions(defaults) {
       knip: () => p.confirm({
         message: "Ajouter Knip (d\xE9tection de code mort) ?",
         initialValue: true
+      }),
+      claudeMd: () => p.confirm({
+        message: "Cr\xE9er CLAUDE.md (instructions pour Claude Code) ?",
+        initialValue: true
       })
     },
     {
@@ -454,7 +532,18 @@ async function promptInitOptions(defaults) {
   return options;
 }
 function executeInit(options) {
-  const { cwd, packageManager, projectType, commitlint, husky, vscode, knip, force, dryRun } = options;
+  const {
+    cwd,
+    packageManager,
+    projectType,
+    commitlint,
+    husky,
+    vscode,
+    knip,
+    claudeMd,
+    force,
+    dryRun
+  } = options;
   const pmCommands = getPackageManagerCommands(packageManager);
   const tasks = [];
   const biomePath = join4(cwd, "biome.json");
@@ -596,6 +685,23 @@ function executeInit(options) {
       runCommand(cmd, [...baseArgs, "knip"], cwd);
     }
   }
+  if (claudeMd) {
+    const claudeMdPath = join4(cwd, "CLAUDE.md");
+    if (!fileExists(claudeMdPath) || force) {
+      if (!dryRun) {
+        writeFile(
+          claudeMdPath,
+          generateClaudeMd({
+            projectType,
+            commitlint,
+            knip,
+            packageManager
+          })
+        );
+      }
+      tasks.push("CLAUDE.md");
+    }
+  }
   return;
 }
 var initCommand = defineCommand({
@@ -638,6 +744,16 @@ var initCommand = defineCommand({
       description: "Add Knip for dead code detection",
       default: void 0
     },
+    "claude-md": {
+      type: "boolean",
+      description: "Create CLAUDE.md for Claude Code instructions",
+      default: void 0
+    },
+    "skip-claude-md": {
+      type: "boolean",
+      description: "Skip CLAUDE.md creation",
+      default: false
+    },
     "dry-run": {
       type: "boolean",
       alias: "d",
@@ -663,6 +779,7 @@ var initCommand = defineCommand({
         husky: !args2["skip-husky"],
         vscode: !args2["skip-vscode"],
         knip: args2.knip ?? true,
+        claudeMd: args2["claude-md"] ?? !args2["skip-claude-md"],
         force: args2.force,
         dryRun: args2["dry-run"]
       };
@@ -701,7 +818,9 @@ var initCommand = defineCommand({
           `  ${pc.green("feat")}: nouvelle fonctionnalit\xE9`,
           `  ${pc.green("fix")}: correction de bug`,
           `  ${pc.green("docs")}: documentation`
-        ].join("\n") : `${pc.dim("Tip: Ajoutez commitlint avec")} quality init --commitlint`
+        ].join("\n") : `${pc.dim("Tip: Ajoutez commitlint avec")} quality init --commitlint`,
+        "",
+        options.claudeMd ? `${pc.cyan("CLAUDE.md cr\xE9\xE9")} ${pc.dim("- Instructions pour Claude Code")}` : `${pc.dim("Tip: Ajoutez CLAUDE.md avec")} quality init --claude-md`
       ].filter(Boolean).join("\n"),
       "Prochaines \xE9tapes"
     );

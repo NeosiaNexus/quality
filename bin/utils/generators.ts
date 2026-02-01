@@ -287,3 +287,109 @@ export function getLintStagedConfig(): Record<string, string[]> {
 		"*.{js,jsx,ts,tsx,json,css,md}": ["biome check --write --no-errors-on-unmatched"],
 	};
 }
+
+interface ClaudeMdOptions {
+	projectType: ProjectType;
+	commitlint: boolean;
+	knip: boolean;
+	packageManager: string;
+}
+
+/**
+ * Generates CLAUDE.md file with project-specific instructions for Claude Code
+ */
+export function generateClaudeMd(options: ClaudeMdOptions): string {
+	const { projectType, commitlint, knip, packageManager } = options;
+	const pm = packageManager === "npm" ? "npm run" : packageManager;
+
+	const sections: string[] = [];
+
+	// Header
+	sections.push(`# Project Quality Configuration
+
+This project uses \`@neosianexus/quality\` with ultra-strict TypeScript and Biome.`);
+
+	// Verification Commands
+	const commands = [
+		`${pm} check      # Lint + Format (Biome)`,
+		`${pm} typecheck  # TypeScript strict mode`,
+	];
+
+	if (knip) {
+		commands.push(`${pm} knip       # Dead code detection`);
+	}
+
+	sections.push(`## Verification Commands
+
+IMPORTANT: Always run these before committing:
+
+\`\`\`bash
+${commands.join("\n")}
+\`\`\``);
+
+	// Critical TypeScript Rules
+	sections.push(`## Critical TypeScript Rules
+
+This project uses ultra-strict TypeScript. You MUST:
+
+- \`noUncheckedIndexedAccess\`: Always check array/object access (\`arr[0]?.value\`)
+- \`exactOptionalPropertyTypes\`: \`undefined\` must be explicit for optional props
+- \`noImplicitAny\`: Never use implicit \`any\`, always type explicitly
+- \`verbatimModuleSyntax\`: Use \`import type { X }\` for type-only imports`);
+
+	// Biome Rules
+	let biomeRules = `## Biome Rules (replaces ESLint + Prettier)
+
+- NO \`forEach\` → use \`for...of\` or \`map\`
+- NO CommonJS → use ES modules (\`import\`/\`export\`)
+- NO non-null assertions (\`!\`) → use proper null checks
+- NO implicit \`any\` → always type explicitly
+- Max 15 cognitive complexity per function
+- Max 4 parameters per function`;
+
+	if (projectType === "nextjs") {
+		biomeRules += `
+- Default exports allowed ONLY for Next.js pages/layouts/routes`;
+	} else {
+		biomeRules += `
+- NO default exports (use named exports)`;
+	}
+
+	sections.push(biomeRules);
+
+	// Code Style
+	sections.push(`## Code Style (enforced automatically)
+
+- Indentation: Tabs (2-space width)
+- Quotes: Double quotes (\`"\`)
+- Semicolons: Always
+- Line width: 100 characters
+- Trailing commas: Everywhere`);
+
+	// Commit Format
+	if (commitlint) {
+		sections.push(`## Commit Format (Conventional Commits)
+
+\`\`\`
+<type>(<scope>): <subject>
+\`\`\`
+
+Types: \`feat\` | \`fix\` | \`docs\` | \`style\` | \`refactor\` | \`perf\` | \`test\` | \`build\` | \`ci\` | \`chore\``);
+	}
+
+	// File Naming
+	let fileNaming = `## File Naming
+
+- Components: \`PascalCase.tsx\` (e.g., \`UserCard.tsx\`)
+- Utilities: \`camelCase.ts\` (e.g., \`formatDate.ts\`)
+- Configs: \`kebab-case\` (e.g., \`next.config.ts\`)`;
+
+	if (projectType === "nextjs") {
+		fileNaming += `
+- Routes: \`page.tsx\`, \`layout.tsx\`, \`route.ts\``;
+	}
+
+	sections.push(fileNaming);
+
+	return `${sections.join("\n\n")}\n`;
+}
