@@ -352,10 +352,10 @@ function generateKnipConfig(type) {
 function getPackageScripts(options) {
   const scripts = {
     lint: "biome lint .",
-    "lint:fix": "biome lint --write .",
+    "lint:fix": "biome lint --write --unsafe .",
     format: "biome format --write .",
     check: "biome check .",
-    "check:fix": "biome check --write .",
+    "check:fix": "biome check --write --unsafe .",
     typecheck: "tsc --noEmit"
   };
   if (options.husky) {
@@ -372,7 +372,7 @@ function getPackageScripts(options) {
 }
 function getLintStagedConfig() {
   return {
-    "*.{js,jsx,ts,tsx,json,css,md}": ["biome check --write --no-errors-on-unmatched"]
+    "*.{js,jsx,ts,tsx,json,css,md}": ["biome check --write --unsafe --no-errors-on-unmatched"]
   };
 }
 function generateClaudeMd(options) {

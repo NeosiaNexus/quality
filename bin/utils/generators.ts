@@ -256,10 +256,10 @@ export function getPackageScripts(options: {
 }): Record<string, string> {
 	const scripts: Record<string, string> = {
 		lint: "biome lint .",
-		"lint:fix": "biome lint --write .",
+		"lint:fix": "biome lint --write --unsafe .",
 		format: "biome format --write .",
 		check: "biome check .",
-		"check:fix": "biome check --write .",
+		"check:fix": "biome check --write --unsafe .",
 		typecheck: "tsc --noEmit",
 	};
 
@@ -284,7 +284,7 @@ export function getPackageScripts(options: {
  */
 export function getLintStagedConfig(): Record<string, string[]> {
 	return {
-		"*.{js,jsx,ts,tsx,json,css,md}": ["biome check --write --no-errors-on-unmatched"],
+		"*.{js,jsx,ts,tsx,json,css,md}": ["biome check --write --unsafe --no-errors-on-unmatched"],
 	};
 }
 
