@@ -7,6 +7,7 @@ import {
 	createBackup,
 	detectProjectType,
 	generateBiomeConfig,
+	generateKnipConfig,
 	generateTsConfig,
 	getLintStagedConfig,
 	getPackageScripts,
@@ -169,6 +170,13 @@ export const upgradeCommand = defineCommand({
 				currentContent: readJsonFile(join(cwd, "tsconfig.json")),
 				newDefaults: generateTsConfig(projectType),
 				requiresMerge: true, // tsconfig.json should preserve user paths/includes
+			},
+			{
+				name: "knip.json",
+				path: join(cwd, "knip.json"),
+				currentContent: readJsonFile(join(cwd, "knip.json")),
+				newDefaults: generateKnipConfig(projectType),
+				requiresMerge: true, // knip.json should preserve user ignores
 			},
 			{
 				name: ".vscode/settings.json",

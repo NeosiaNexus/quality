@@ -15,6 +15,10 @@
 		"allowJs": true,
 		"incremental": true,
 
+		/* Disable options incompatible with Next.js CSS imports */
+		"verbatimModuleSyntax": false,
+		"allowImportingTsExtensions": false,
+
 		/* Next.js plugins */
 		"plugins": [
 			{

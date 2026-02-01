@@ -160,6 +160,22 @@ function executeInit(options: InitOptions): void {
 		tasks.push("tsconfig.json");
 	}
 
+	// 2b. Create type declarations for CSS/assets (React/Next.js)
+	if (projectType === "nextjs" || projectType === "react") {
+		const typesDir = join(cwd, "src", "types");
+		const cssDeclarationPath = join(typesDir, "css.d.ts");
+
+		if (!fileExists(cssDeclarationPath) || force) {
+			if (!dryRun) {
+				if (!existsSync(typesDir)) {
+					mkdirSync(typesDir, { recursive: true });
+				}
+				writeFile(cssDeclarationPath, 'declare module "*.css";\n');
+			}
+			tasks.push("src/types/css.d.ts");
+		}
+	}
+
 	// 3. VS Code configuration
 	if (vscode) {
 		const vscodeDir = join(cwd, ".vscode");

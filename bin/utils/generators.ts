@@ -11,7 +11,7 @@ const packageRoot = join(currentDir, "..", "..");
  */
 export function generateBiomeConfig(): Record<string, unknown> {
 	return {
-		$schema: "https://biomejs.dev/schemas/2.0.0/schema.json",
+		$schema: "https://biomejs.dev/schemas/2.3.13/schema.json",
 		extends: ["@neosianexus/quality"],
 	};
 }
@@ -208,17 +208,24 @@ export function getVscodeExtensions(): Record<string, unknown> {
 export function generateKnipConfig(type: ProjectType): Record<string, unknown> {
 	const baseConfig = {
 		$schema: "https://unpkg.com/knip@5/schema.json",
-		project: ["src/**/*.{ts,tsx,js,jsx}"],
 		ignore: ["**/*.d.ts"],
+		ignoreBinaries: ["biome"],
 	};
 
 	if (type === "nextjs") {
 		return {
 			...baseConfig,
-			entry: ["src/app/**/*.{ts,tsx}", "src/pages/**/*.{ts,tsx}", "app/**/*.{ts,tsx}"],
-			project: ["src/**/*.{ts,tsx}", "app/**/*.{ts,tsx}"],
+			entry: ["src/app/**/page.tsx", "src/app/**/layout.tsx", "src/app/**/route.ts"],
+			project: ["src/**/*.{ts,tsx}"],
+			ignoreDependencies: ["tailwindcss", "postcss", "autoprefixer"],
 			next: {
 				entry: ["next.config.{js,ts,mjs}"],
+			},
+			postcss: {
+				config: ["postcss.config.{js,mjs,cjs}"],
+			},
+			tailwind: {
+				config: ["tailwind.config.{js,ts,mjs,cjs}"],
 			},
 		};
 	}
@@ -226,12 +233,15 @@ export function generateKnipConfig(type: ProjectType): Record<string, unknown> {
 	if (type === "react") {
 		return {
 			...baseConfig,
+			project: ["src/**/*.{ts,tsx,js,jsx}"],
 			entry: ["src/index.{ts,tsx}", "src/main.{ts,tsx}", "src/App.{ts,tsx}"],
+			ignoreDependencies: ["tailwindcss", "postcss", "autoprefixer"],
 		};
 	}
 
 	return {
 		...baseConfig,
+		project: ["src/**/*.{ts,tsx,js,jsx}"],
 		entry: ["src/index.ts", "src/main.ts"],
 	};
 }
@@ -263,6 +273,7 @@ export function getPackageScripts(options: {
 
 	if (options.knip) {
 		scripts.knip = "knip";
+		scripts["knip:fix"] = "knip --fix";
 	}
 
 	return scripts;

@@ -11,7 +11,7 @@ import { defineCommand } from "citty";
 import pc from "picocolors";
 
 // bin/utils/constants.ts
-var VERSION = "1.0.0-beta.1";
+var VERSION = "1.0.0-beta.2";
 var PACKAGE_NAME = "@neosianexus/quality";
 
 // bin/utils/detect.ts
@@ -159,7 +159,7 @@ var currentDir = dirname2(fileURLToPath(import.meta.url));
 var packageRoot = join3(currentDir, "..", "..");
 function generateBiomeConfig() {
   return {
-    $schema: "https://biomejs.dev/schemas/2.0.0/schema.json",
+    $schema: "https://biomejs.dev/schemas/2.3.13/schema.json",
     extends: ["@neosianexus/quality"]
   };
 }
@@ -315,27 +315,37 @@ function getVscodeExtensions() {
 function generateKnipConfig(type) {
   const baseConfig = {
     $schema: "https://unpkg.com/knip@5/schema.json",
-    project: ["src/**/*.{ts,tsx,js,jsx}"],
-    ignore: ["**/*.d.ts"]
+    ignore: ["**/*.d.ts"],
+    ignoreBinaries: ["biome"]
   };
   if (type === "nextjs") {
     return {
       ...baseConfig,
-      entry: ["src/app/**/*.{ts,tsx}", "src/pages/**/*.{ts,tsx}", "app/**/*.{ts,tsx}"],
-      project: ["src/**/*.{ts,tsx}", "app/**/*.{ts,tsx}"],
+      entry: ["src/app/**/page.tsx", "src/app/**/layout.tsx", "src/app/**/route.ts"],
+      project: ["src/**/*.{ts,tsx}"],
+      ignoreDependencies: ["tailwindcss", "postcss", "autoprefixer"],
       next: {
         entry: ["next.config.{js,ts,mjs}"]
+      },
+      postcss: {
+        config: ["postcss.config.{js,mjs,cjs}"]
+      },
+      tailwind: {
+        config: ["tailwind.config.{js,ts,mjs,cjs}"]
       }
     };
   }
   if (type === "react") {
     return {
       ...baseConfig,
-      entry: ["src/index.{ts,tsx}", "src/main.{ts,tsx}", "src/App.{ts,tsx}"]
+      project: ["src/**/*.{ts,tsx,js,jsx}"],
+      entry: ["src/index.{ts,tsx}", "src/main.{ts,tsx}", "src/App.{ts,tsx}"],
+      ignoreDependencies: ["tailwindcss", "postcss", "autoprefixer"]
     };
   }
   return {
     ...baseConfig,
+    project: ["src/**/*.{ts,tsx,js,jsx}"],
     entry: ["src/index.ts", "src/main.ts"]
   };
 }
@@ -356,6 +366,7 @@ function getPackageScripts(options) {
   }
   if (options.knip) {
     scripts.knip = "knip";
+    scripts["knip:fix"] = "knip --fix";
   }
   return scripts;
 }
@@ -459,6 +470,19 @@ function executeInit(options) {
       writeJsonFile(tsconfigPath, generateTsConfig(projectType));
     }
     tasks.push("tsconfig.json");
+  }
+  if (projectType === "nextjs" || projectType === "react") {
+    const typesDir = join4(cwd, "src", "types");
+    const cssDeclarationPath = join4(typesDir, "css.d.ts");
+    if (!fileExists(cssDeclarationPath) || force) {
+      if (!dryRun) {
+        if (!existsSync4(typesDir)) {
+          mkdirSync2(typesDir, { recursive: true });
+        }
+        writeFile(cssDeclarationPath, 'declare module "*.css";\n');
+      }
+      tasks.push("src/types/css.d.ts");
+    }
   }
   if (vscode) {
     const vscodeDir = join4(cwd, ".vscode");
@@ -797,6 +821,14 @@ var upgradeCommand = defineCommand2({
         newDefaults: generateTsConfig(projectType),
         requiresMerge: true
         // tsconfig.json should preserve user paths/includes
+      },
+      {
+        name: "knip.json",
+        path: join5(cwd, "knip.json"),
+        currentContent: readJsonFile(join5(cwd, "knip.json")),
+        newDefaults: generateKnipConfig(projectType),
+        requiresMerge: true
+        // knip.json should preserve user ignores
       },
       {
         name: ".vscode/settings.json",

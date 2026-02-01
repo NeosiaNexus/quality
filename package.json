@@ -1,6 +1,6 @@
 {
 	"name": "@neosianexus/quality",
-	"version": "1.0.0-beta.1",
+	"version": "1.0.0-beta.2",
 	"description": "Ultra-strict Biome + TypeScript + Husky + Commitlint configuration for React/Next.js projects",
 	"type": "module",
 	"main": "./biome.json",
