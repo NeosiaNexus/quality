@@ -1,51 +1,115 @@
 {
 	"name": "@neosianexus/quality",
 	"version": "1.0.0",
-	"description": "Ultra-strict Biome configuration for React/Next.js + TypeScript projects",
+	"description": "Ultra-strict Biome + TypeScript + Husky + Commitlint configuration for React/Next.js projects",
 	"type": "module",
 	"main": "./biome.json",
 	"bin": {
-		"quality-init": "./bin/init.ts"
+		"quality": "./bin/cli.js",
+		"quality-init": "./bin/cli.js"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"homepage": "https://github.com/neosianexus/quality#readme",
+	"bugs": {
+		"url": "https://github.com/neosianexus/quality/issues"
+	},
+	"funding": {
+		"type": "github",
+		"url": "https://github.com/sponsors/neosianexus"
 	},
 	"exports": {
 		".": "./biome.json",
 		"./biome.json": "./biome.json",
 		"./biome": "./biome.json",
+		"./tsconfig.base": "./tsconfig.base.json",
+		"./tsconfig.react": "./tsconfig.react.json",
+		"./tsconfig.nextjs": "./tsconfig.nextjs.json",
+		"./tsconfig": "./tsconfig.base.json",
+		"./commitlint": "./commitlint.config.js",
+		"./commitlint.config": "./commitlint.config.js",
 		"./vscode/settings": "./vscode/settings.json",
-		"./vscode/extensions": "./vscode/extensions.json"
+		"./vscode/extensions": "./vscode/extensions.json",
+		"./knip": "./knip.config.json",
+		"./knip.json": "./knip.config.json"
 	},
 	"files": [
 		"biome.json",
+		"tsconfig.base.json",
+		"tsconfig.react.json",
+		"tsconfig.nextjs.json",
+		"commitlint.config.js",
+		"knip.config.json",
 		"bin",
 		"vscode"
 	],
 	"scripts": {
-		"lint": "biome lint .",
-		"format": "biome format --write .",
-		"check": "biome check .",
-		"check:fix": "biome check --write ."
+		"build": "tsup",
+		"prepublishOnly": "bun run validate && bun run build && bun run publint",
+		"validate": "bun run check && bun run typecheck && bun run knip",
+		"lint": "biome lint --config-path=biome.dev.json .",
+		"lint:fix": "biome lint --config-path=biome.dev.json --write .",
+		"format": "biome format --config-path=biome.dev.json --write .",
+		"check": "biome check --config-path=biome.dev.json .",
+		"check:fix": "biome check --config-path=biome.dev.json --write .",
+		"typecheck": "tsc --noEmit",
+		"knip": "knip",
+		"publint": "publint",
+		"attw": "attw --pack .",
+		"dev": "bun run bin/cli.ts"
 	},
 	"keywords": [
 		"biome",
 		"linter",
 		"formatter",
 		"typescript",
+		"tsconfig",
+		"husky",
+		"lint-staged",
+		"commitlint",
+		"conventional-commits",
 		"react",
 		"nextjs",
 		"quality",
 		"strict",
-		"enterprise"
+		"enterprise",
+		"pre-commit"
 	],
 	"author": "neosianexus",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/neosianexus/quality"
+		"url": "git+https://github.com/neosianexus/quality.git"
 	},
 	"peerDependencies": {
-		"@biomejs/biome": ">=2.0.0"
+		"@biomejs/biome": "^2.0.0",
+		"typescript": "^5.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@commitlint/cli": {
+			"optional": true
+		},
+		"@commitlint/config-conventional": {
+			"optional": true
+		}
+	},
+	"dependencies": {
+		"@clack/prompts": "^0.10.0",
+		"citty": "^0.1.6",
+		"deepmerge": "^4.3.1",
+		"picocolors": "^1.1.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.3.13"
+		"@arethetypeswrong/cli": "^0.18.2",
+		"@biomejs/biome": "^2.3.13",
+		"@commitlint/cli": "^19.8.1",
+		"@commitlint/config-conventional": "^19.8.1",
+		"@commitlint/types": "^19.8.1",
+		"@types/node": "^22.15.21",
+		"knip": "^5.82.1",
+		"publint": "^0.3.17",
+		"tsup": "^8.5.0",
+		"typescript": "^5.8.3"
 	}
 }
