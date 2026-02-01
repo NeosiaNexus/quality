@@ -1,0 +1,7 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}", "app/**/*.{ts,tsx}"],
+	"project": ["src/**/*.{ts,tsx,js,jsx}", "app/**/*.{ts,tsx,js,jsx}"],
+	"ignore": ["**/*.d.ts", "**/*.config.{ts,js,mjs,cjs}"],
+	"ignoreDependencies": []
+}

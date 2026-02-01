@@ -1,0 +1,6 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"project": ["bin/**/*.ts"],
+	"ignore": ["bin/**/*.js"],
+	"ignoreDependencies": ["@commitlint/cli"]
+}

@@ -1,0 +1,33 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+	"extends": ["./biome.json"],
+	"files": {
+		"includes": ["**", "!bin/**/*.js"]
+	},
+	"overrides": [
+		{
+			"includes": ["bin/**/*.ts"],
+			"linter": {
+				"rules": {
+					"performance": {
+						"noBarrelFile": "off",
+						"noReExportAll": "off",
+						"noNamespaceImport": "off",
+						"noAwaitInLoops": "off"
+					},
+					"complexity": {
+						"noExcessiveCognitiveComplexity": "off",
+						"noExcessiveLinesPerFunction": "off"
+					},
+					"style": {
+						"useExportsLast": "off",
+						"noNegationElse": "off"
+					},
+					"nursery": {
+						"noFloatingPromises": "off"
+					}
+				}
+			}
+		}
+	]
+}
