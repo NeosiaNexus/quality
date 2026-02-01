@@ -1,0 +1,51 @@
+{
+	"name": "@neosianexus/quality",
+	"version": "1.0.0",
+	"description": "Ultra-strict Biome configuration for React/Next.js + TypeScript projects",
+	"type": "module",
+	"main": "./biome.json",
+	"bin": {
+		"quality-init": "./bin/init.ts"
+	},
+	"exports": {
+		".": "./biome.json",
+		"./biome.json": "./biome.json",
+		"./biome": "./biome.json",
+		"./vscode/settings": "./vscode/settings.json",
+		"./vscode/extensions": "./vscode/extensions.json"
+	},
+	"files": [
+		"biome.json",
+		"bin",
+		"vscode"
+	],
+	"scripts": {
+		"lint": "biome lint .",
+		"format": "biome format --write .",
+		"check": "biome check .",
+		"check:fix": "biome check --write ."
+	},
+	"keywords": [
+		"biome",
+		"linter",
+		"formatter",
+		"typescript",
+		"react",
+		"nextjs",
+		"quality",
+		"strict",
+		"enterprise"
+	],
+	"author": "neosianexus",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/neosianexus/quality"
+	},
+	"peerDependencies": {
+		"@biomejs/biome": ">=2.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.13"
+	}
+}

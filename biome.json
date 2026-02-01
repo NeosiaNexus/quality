@@ -1,0 +1,206 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"defaultBranch": "main"
+	},
+	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineWidth": 100,
+		"lineEnding": "lf",
+		"formatWithErrors": false,
+		"includes": [
+			"**",
+			"!**/node_modules/**",
+			"!**/.next/**",
+			"!**/dist/**",
+			"!**/build/**",
+			"!**/coverage/**",
+			"!**/.git/**",
+			"!**/pnpm-lock.yaml",
+			"!**/package-lock.json",
+			"!**/bun.lockb"
+		]
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"jsxQuoteStyle": "double",
+			"semicolons": "always",
+			"trailingCommas": "all",
+			"quoteProperties": "asNeeded",
+			"arrowParentheses": "always",
+			"bracketSpacing": true,
+			"bracketSameLine": false
+		},
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		}
+	},
+	"json": {
+		"formatter": {
+			"trailingCommas": "none"
+		},
+		"parser": {
+			"allowComments": true,
+			"allowTrailingCommas": true
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"a11y": {
+				"recommended": true
+			},
+			"correctness": {
+				"recommended": true,
+				"noNodejsModules": "off",
+				"noUndeclaredVariables": "error",
+				"noUnusedVariables": "error",
+				"noUnusedImports": "error",
+				"noUnusedFunctionParameters": "error",
+				"noUnusedPrivateClassMembers": "error",
+				"useImportExtensions": "off"
+			},
+			"style": {
+				"recommended": true,
+				"noDefaultExport": "off",
+				"useFilenamingConvention": {
+					"level": "error",
+					"options": {
+						"strictCase": false,
+						"filenameCases": ["camelCase", "PascalCase", "kebab-case"]
+					}
+				},
+				"useNamingConvention": {
+					"level": "error",
+					"options": {
+						"strictCase": false,
+						"conventions": [
+							{
+								"selector": { "kind": "variable" },
+								"formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
+							},
+							{
+								"selector": { "kind": "function" },
+								"formats": ["camelCase", "PascalCase"]
+							},
+							{
+								"selector": { "kind": "typeLike" },
+								"formats": ["PascalCase"]
+							},
+							{
+								"selector": { "kind": "enumMember" },
+								"formats": ["PascalCase", "CONSTANT_CASE"]
+							}
+						]
+					}
+				},
+				"noCommonJs": "error",
+				"noEnum": "warn",
+				"noRestrictedImports": "off",
+				"useImportType": "error",
+				"useExportType": "error"
+			},
+			"suspicious": {
+				"recommended": true,
+				"noConsole": "warn",
+				"noDebugger": "error",
+				"noExplicitAny": "error",
+				"noArrayIndexKey": "warn"
+			},
+			"complexity": {
+				"recommended": true,
+				"noExcessiveCognitiveComplexity": {
+					"level": "error",
+					"options": {
+						"maxAllowedComplexity": 15
+					}
+				}
+			},
+			"nursery": {
+				"useSortedClasses": "error"
+			},
+			"performance": {
+				"recommended": true,
+				"noBarrelFile": "warn",
+				"noReExportAll": "warn",
+				"noNamespaceImport": "off"
+			},
+			"security": {
+				"recommended": true,
+				"noSecrets": "error"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": [
+				"**/*.config.ts",
+				"**/*.config.js",
+				"**/*.config.mjs",
+				"**/*.config.cjs",
+				"**/next.config.*",
+				"**/tailwind.config.*",
+				"**/postcss.config.*",
+				"**/vite.config.*",
+				"**/vitest.config.*",
+				"**/playwright.config.*",
+				"**/jest.config.*",
+				"**/tsconfig.json",
+				"**/tsconfig.*.json"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"noDefaultExport": "off",
+						"useNamingConvention": "off",
+						"useFilenamingConvention": "off",
+						"noCommonJs": "off",
+						"noProcessEnv": "off"
+					},
+					"suspicious": {
+						"noConsole": "off"
+					},
+					"nursery": {},
+					"correctness": {
+						"noNodejsModules": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "warn"
+					},
+					"complexity": {
+						"noExcessiveCognitiveComplexity": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/scripts/**", "**/bin/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					},
+					"nursery": {},
+					"style": {
+						"noProcessEnv": "off"
+					}
+				}
+			}
+		}
+	]
+}
