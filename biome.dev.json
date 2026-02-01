@@ -6,6 +6,16 @@
 	},
 	"overrides": [
 		{
+			"includes": ["tsconfig*.json"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noDuplicateObjectKeys": "off"
+					}
+				}
+			}
+		},
+		{
 			"includes": ["bin/**/*.ts"],
 			"linter": {
 				"rules": {
