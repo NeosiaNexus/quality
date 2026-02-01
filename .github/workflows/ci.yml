@@ -33,7 +33,7 @@ jobs:
         run: bun run build
 
       - name: Test CLI
-        run: bun run bin/init.ts --help
+        run: bun run bin/cli.ts --help
 
   # Test de compatibilité avec npm (pour les utilisateurs)
   compat-npm:
@@ -47,7 +47,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build
-      - run: node bin/init.js --help
+      - run: node bin/cli.js --help
 
   security:
     name: Security Audit
