@@ -11,7 +11,7 @@ import { defineCommand } from "citty";
 import pc from "picocolors";
 
 // bin/utils/constants.ts
-var VERSION = "1.0.0";
+var VERSION = "1.0.0-beta.1";
 var PACKAGE_NAME = "@neosianexus/quality";
 
 // bin/utils/detect.ts
@@ -892,7 +892,10 @@ var upgradeCommand = defineCommand2({
       }
       const scripts = packageJson.scripts || {};
       for (const name of missingScripts) {
-        scripts[name] = newScripts[name];
+        const script = newScripts[name];
+        if (script) {
+          scripts[name] = script;
+        }
       }
       packageJson.scripts = scripts;
       if (!packageJson["lint-staged"]) {
