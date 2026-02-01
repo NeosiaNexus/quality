@@ -1,0 +1,204 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate
+        run: bun run validate
+
+      - name: Build
+        run: bun run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: bin/cli.js
+          retention-days: 1
+
+  publish-npm:
+    runs-on: ubuntu-latest
+    needs: quality
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: bin/
+
+      - name: Set up Node.js for npm publish
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Determine npm tag
+        id: npm_tag
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          if [[ "$VERSION" == *"-"* ]]; then
+            echo "TAG=beta" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public --tag ${{ steps.npm_tag.outputs.TAG }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: publish-npm
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Check if prerelease
+        id: prerelease
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          if [[ "$VERSION" == *"-"* ]]; then
+            echo "IS_PRERELEASE=true" >> $GITHUB_OUTPUT
+          else
+            echo "IS_PRERELEASE=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get previous tag
+        id: prev_tag
+        run: |
+          PREV_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | sed -n '2p')
+          echo "PREV_TAG=${PREV_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -n "${{ steps.prev_tag.outputs.PREV_TAG }}" ]; then
+            RANGE="${{ steps.prev_tag.outputs.PREV_TAG }}..HEAD"
+          else
+            RANGE="HEAD~10..HEAD"
+          fi
+
+          # Get all commits
+          COMMITS=$(git log $RANGE --pretty=format:"%s|%h|%an" --no-merges)
+
+          # Initialize sections
+          FEATURES=""
+          FIXES=""
+          DOCS=""
+          CHORES=""
+          OTHER=""
+
+          while IFS='|' read -r msg hash author; do
+            [ -z "$msg" ] && continue
+
+            # Clean up the message (remove scope if present)
+            clean_msg=$(echo "$msg" | sed 's/^[a-z]*([^)]*): //' | sed 's/^[a-z]*: //')
+            entry="- $clean_msg (\`$hash\`) - @$author"
+
+            case "$msg" in
+              feat:*|feat\(*) FEATURES="$FEATURES$entry"$'\n' ;;
+              fix:*|fix\(*) FIXES="$FIXES$entry"$'\n' ;;
+              docs:*|docs\(*) DOCS="$DOCS$entry"$'\n' ;;
+              chore:*|chore\(*|build:*|build\(*|ci:*|ci\(*) CHORES="$CHORES$entry"$'\n' ;;
+              *) OTHER="$OTHER$entry"$'\n' ;;
+            esac
+          done <<< "$COMMITS"
+
+          # Build final changelog
+          CHANGELOG=""
+
+          if [ -n "$FEATURES" ]; then
+            CHANGELOG="$CHANGELOG### ✨ New Features"$'\n\n'"$FEATURES"$'\n'
+          fi
+
+          if [ -n "$FIXES" ]; then
+            CHANGELOG="$CHANGELOG### 🐛 Bug Fixes"$'\n\n'"$FIXES"$'\n'
+          fi
+
+          if [ -n "$DOCS" ]; then
+            CHANGELOG="$CHANGELOG### 📚 Documentation"$'\n\n'"$DOCS"$'\n'
+          fi
+
+          if [ -n "$OTHER" ]; then
+            CHANGELOG="$CHANGELOG### 🔧 Other Changes"$'\n\n'"$OTHER"$'\n'
+          fi
+
+          if [ -n "$CHORES" ]; then
+            CHANGELOG="$CHANGELOG### 🏗️ Maintenance"$'\n\n'"$CHORES"$'\n'
+          fi
+
+          # Fallback if empty
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No notable changes in this release."
+          fi
+
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## What's Changed
+
+            ${{ steps.changelog.outputs.CHANGELOG }}
+
+            ## Installation
+
+            ```bash
+            npx @neosianexus/quality@${{ steps.version.outputs.VERSION }} init
+            ```
+
+            ## Links
+
+            - [NPM Package](https://www.npmjs.com/package/@neosianexus/quality/v/${{ steps.version.outputs.VERSION }})
+            - [Documentation](https://github.com/neosianexus/quality#readme)
+          draft: false
+          prerelease: ${{ steps.prerelease.outputs.IS_PRERELEASE }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
