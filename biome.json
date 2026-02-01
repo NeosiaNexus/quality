@@ -29,6 +29,7 @@
 		]
 	},
 	"javascript": {
+		"jsxRuntime": "reactClassic",
 		"formatter": {
 			"quoteStyle": "double",
 			"jsxQuoteStyle": "double",
