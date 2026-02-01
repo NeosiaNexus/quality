@@ -1,0 +1,57 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"display": "@neosianexus/quality - Base TypeScript Config",
+	"compilerOptions": {
+		/* Type Checking - Maximum Strictness */
+		"strict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictBindCallApply": true,
+		"strictPropertyInitialization": true,
+		"strictBuiltinIteratorReturn": true,
+		"noImplicitThis": true,
+		"useUnknownInCatchVariables": true,
+		"alwaysStrict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"exactOptionalPropertyTypes": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"allowUnusedLabels": false,
+		"allowUnreachableCode": false,
+
+		/* Modules */
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
+		"noUncheckedSideEffectImports": true,
+
+		/* Emit */
+		"noEmit": true,
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"removeComments": false,
+
+		/* Interop Constraints */
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+
+		/* Language and Environment */
+		"target": "ES2022",
+		"lib": ["ES2022"],
+		"useDefineForClassFields": true,
+
+		/* Completeness */
+		"skipLibCheck": true
+	},
+	"exclude": ["node_modules", "dist", "build", ".next", "coverage", "**/*.spec.ts", "**/*.test.ts"]
+}

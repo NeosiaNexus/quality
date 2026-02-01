@@ -1,0 +1,25 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"display": "@neosianexus/quality - Next.js TypeScript Config",
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		/* JSX - Next.js uses preserve for its own compilation */
+		"jsx": "preserve",
+
+		/* Libraries */
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+
+		/* Next.js specific */
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"allowJs": true,
+		"incremental": true,
+
+		/* Next.js plugins */
+		"plugins": [
+			{
+				"name": "next"
+			}
+		]
+	}
+}
