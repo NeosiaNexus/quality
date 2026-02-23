@@ -11,7 +11,7 @@ const packageRoot = join(currentDir, "..", "..");
  */
 export function generateBiomeConfig(): Record<string, unknown> {
 	return {
-		$schema: "https://biomejs.dev/schemas/2.3.13/schema.json",
+		$schema: "https://biomejs.dev/schemas/latest/schema.json",
 		extends: ["@neosianexus/quality"],
 	};
 }
