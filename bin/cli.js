@@ -11,7 +11,7 @@ import { defineCommand } from "citty";
 import pc from "picocolors";
 
 // bin/utils/constants.ts
-var VERSION = "1.0.0-beta.9";
+var VERSION = "1.0.0-beta.10";
 var PACKAGE_NAME = "@neosianexus/quality";
 
 // bin/utils/detect.ts

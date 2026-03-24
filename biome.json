@@ -152,7 +152,13 @@
 				"useRegexLiterals": "error",
 				"useSimpleNumberKeys": "error",
 				"useSimplifiedLogicExpression": "error",
-				"useWhile": "error"
+				"useWhile": "error",
+				"noUselessCatchBinding": "error",
+				"noUselessUndefined": "error",
+				"useMaxParams": {
+					"level": "error",
+					"options": { "max": 4 }
+				}
 			},
 			"correctness": {
 				"recommended": true,
@@ -200,17 +206,17 @@
 				"useParseIntRadix": "error",
 				"useValidForDirection": "error",
 				"useValidTypeof": "error",
-				"useYield": "error"
+				"useYield": "error",
+				"noNextAsyncClientComponent": "error",
+				"noUnresolvedImports": "error"
 			},
 			"nursery": {
 				"noAmbiguousAnchorText": "error",
 				"noBeforeInteractiveScriptOutsideDocument": "error",
 				"noContinue": "warn",
-				"noDeprecatedImports": "error",
 				"noDivRegex": "error",
 				"noDuplicateEnumValues": "error",
 				"noDuplicatedSpreadProps": "error",
-				"noEmptySource": "error",
 				"noEqualsToNull": "error",
 				"noExcessiveClassesPerFile": {
 					"level": "warn",
@@ -223,18 +229,14 @@
 				"noFloatingClasses": "error",
 				"noFloatingPromises": "error",
 				"noForIn": "error",
-				"noImportCycles": "error",
 				"noIncrementDecrement": "off",
-				"noJsxLiterals": "off",
 				"noJsxPropsBind": "warn",
 				"noLeakedRender": "error",
 				"noMisusedPromises": "error",
 				"noMultiAssign": "error",
 				"noMultiStr": "error",
-				"noNextAsyncClientComponent": "error",
 				"noParametersOnlyUsedInRecursion": "error",
 				"noProto": "error",
-				"noReactForwardRef": "warn",
 				"noReturnAssign": "error",
 				"noScriptUrl": "error",
 				"noShadow": "error",
@@ -242,13 +244,8 @@
 				"noTernary": "off",
 				"noUnnecessaryConditions": "error",
 				"noUnknownAttribute": "error",
-				"noUnresolvedImports": "error",
-				"noUnusedExpressions": "error",
-				"noUselessCatchBinding": "error",
-				"noUselessUndefined": "error",
 				"useArraySortCompare": "error",
 				"useAwaitThenable": "error",
-				"useConsistentArrowReturn": "error",
 				"useConsistentEnumValueType": "error",
 				"useDestructuring": "warn",
 				"useErrorCause": "warn",
@@ -256,10 +253,6 @@
 				"useExplicitType": "warn",
 				"useFind": "error",
 				"useInlineScriptId": "error",
-				"useMaxParams": {
-					"level": "error",
-					"options": { "max": 4 }
-				},
 				"useRegexpExec": "error",
 				"useSortedClasses": "error",
 				"useSpread": "error"
@@ -388,7 +381,9 @@
 				"useThrowNewError": "error",
 				"useThrowOnlyError": "error",
 				"useTrimStartEnd": "error",
-				"useUnifiedTypeSignatures": "error"
+				"useUnifiedTypeSignatures": "error",
+				"noJsxLiterals": "off",
+				"useConsistentArrowReturn": "error"
 			},
 			"suspicious": {
 				"recommended": true,
@@ -466,7 +461,12 @@
 				"useIsArray": "error",
 				"useNamespaceKeyword": "error",
 				"useNumberToFixedDigitsArgument": "error",
-				"useStrictMode": "off"
+				"useStrictMode": "off",
+				"noDeprecatedImports": "error",
+				"noEmptySource": "error",
+				"noImportCycles": "error",
+				"noReactForwardRef": "warn",
+				"noUnusedExpressions": "error"
 			}
 		}
 	},
@@ -501,11 +501,11 @@
 						"noConsole": "off"
 					},
 					"correctness": {
-						"noNodejsModules": "off"
+						"noNodejsModules": "off",
+						"noUnresolvedImports": "off"
 					},
 					"nursery": {
 						"noShadow": "off",
-						"noUnresolvedImports": "off",
 						"useExplicitType": "off"
 					}
 				}
@@ -533,8 +533,10 @@
 					},
 					"nursery": {
 						"noShadow": "off",
-						"noUnresolvedImports": "off",
 						"useExplicitType": "off"
+					},
+					"correctness": {
+						"noUnresolvedImports": "off"
 					}
 				}
 			}
@@ -547,10 +549,10 @@
 						"noConsole": "off"
 					},
 					"correctness": {
-						"noNodejsModules": "off"
+						"noNodejsModules": "off",
+						"noUnresolvedImports": "off"
 					},
 					"nursery": {
-						"noUnresolvedImports": "off",
 						"noExcessiveLinesPerFile": "off",
 						"useExplicitType": "off",
 						"noUnnecessaryConditions": "off"
@@ -585,8 +587,10 @@
 						"noDefaultExport": "off"
 					},
 					"nursery": {
-						"noUnresolvedImports": "off",
 						"useExplicitType": "off"
+					},
+					"correctness": {
+						"noUnresolvedImports": "off"
 					}
 				}
 			}
