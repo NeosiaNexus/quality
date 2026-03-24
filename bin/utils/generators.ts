@@ -1,10 +1,4 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import type { ProjectType } from "./constants.js";
-
-const currentDir = dirname(fileURLToPath(import.meta.url));
-const packageRoot = join(currentDir, "..", "..");
 
 /**
  * Generates biome.json configuration that extends from this package
@@ -135,26 +129,72 @@ fi
  * Gets VS Code settings configuration
  */
 export function getVscodeSettings(): Record<string, unknown> {
-	const settingsPath = join(packageRoot, "vscode", "settings.json");
-
-	try {
-		return JSON.parse(readFileSync(settingsPath, "utf-8")) as Record<string, unknown>;
-	} catch (error) {
-		throw new Error(`Failed to read VS Code settings from ${settingsPath}`, { cause: error });
-	}
+	return {
+		"editor.defaultFormatter": "biomejs.biome",
+		"editor.formatOnSave": true,
+		"editor.formatOnPaste": true,
+		"editor.codeActionsOnSave": {
+			"source.organizeImports.biome": "explicit",
+			"quickfix.biome": "explicit",
+		},
+		"editor.rulers": [100],
+		"editor.tabSize": 2,
+		"editor.insertSpaces": false,
+		"files.eol": "\n",
+		"files.trimTrailingWhitespace": true,
+		"files.insertFinalNewline": true,
+		"[javascript]": {
+			"editor.defaultFormatter": "biomejs.biome",
+		},
+		"[javascriptreact]": {
+			"editor.defaultFormatter": "biomejs.biome",
+		},
+		"[typescript]": {
+			"editor.defaultFormatter": "biomejs.biome",
+		},
+		"[typescriptreact]": {
+			"editor.defaultFormatter": "biomejs.biome",
+		},
+		"[json]": {
+			"editor.defaultFormatter": "biomejs.biome",
+		},
+		"[jsonc]": {
+			"editor.defaultFormatter": "biomejs.biome",
+		},
+		"[css]": {
+			"editor.defaultFormatter": "biomejs.biome",
+		},
+		"[markdown]": {
+			"files.trimTrailingWhitespace": false,
+		},
+		"biome.enabled": true,
+		"biome.lspBin": null,
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"typescript.enablePromptUseWorkspaceTsdk": true,
+		"typescript.preferences.importModuleSpecifier": "non-relative",
+		"typescript.suggest.autoImports": true,
+		"typescript.updateImportsOnFileMove.enabled": "always",
+		"typescript.preferences.preferTypeOnlyAutoImports": true,
+		"javascript.preferences.importModuleSpecifier": "non-relative",
+		"javascript.updateImportsOnFileMove.enabled": "always",
+	};
 }
 
 /**
  * Gets VS Code extensions configuration
  */
 export function getVscodeExtensions(): Record<string, unknown> {
-	const extensionsPath = join(packageRoot, "vscode", "extensions.json");
-
-	try {
-		return JSON.parse(readFileSync(extensionsPath, "utf-8")) as Record<string, unknown>;
-	} catch (error) {
-		throw new Error(`Failed to read VS Code extensions from ${extensionsPath}`, { cause: error });
-	}
+	return {
+		recommendations: [
+			"biomejs.biome",
+			"usernamehw.errorlens",
+			"editorconfig.editorconfig",
+			"streetsidesoftware.code-spell-checker",
+			"eamodio.gitlens",
+			"gruntfuggly.todo-tree",
+		],
+		unwantedRecommendations: ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"],
+	};
 }
 
 /**

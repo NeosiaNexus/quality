@@ -5,13 +5,13 @@ import { defineCommand as defineCommand3, runCommand as runCommand2, runMain } f
 
 // bin/commands/init.ts
 import { existsSync as existsSync3, mkdirSync as mkdirSync2 } from "fs";
-import { join as join4 } from "path";
+import { join as join3 } from "path";
 import * as p from "@clack/prompts";
 import { defineCommand } from "citty";
 import pc from "picocolors";
 
 // bin/utils/constants.ts
-var VERSION = "1.0.0-beta.6";
+var VERSION = "1.0.0-beta.7";
 var PACKAGE_NAME = "@neosianexus/quality";
 
 // bin/utils/detect.ts
@@ -162,11 +162,6 @@ function fileExists(filePath) {
 }
 
 // bin/utils/generators.ts
-import { readFileSync as readFileSync3 } from "fs";
-import { dirname as dirname2, join as join3 } from "path";
-import { fileURLToPath } from "url";
-var currentDir = dirname2(fileURLToPath(import.meta.url));
-var packageRoot = join3(currentDir, "..", "..");
 function generateBiomeConfig() {
   return {
     $schema: "https://biomejs.dev/schemas/latest/schema.json",
@@ -266,20 +261,68 @@ fi
 `;
 }
 function getVscodeSettings() {
-  const settingsPath = join3(packageRoot, "vscode", "settings.json");
-  try {
-    return JSON.parse(readFileSync3(settingsPath, "utf-8"));
-  } catch (error) {
-    throw new Error(`Failed to read VS Code settings from ${settingsPath}`, { cause: error });
-  }
+  return {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.biome": "explicit",
+      "quickfix.biome": "explicit"
+    },
+    "editor.rulers": [100],
+    "editor.tabSize": 2,
+    "editor.insertSpaces": false,
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "[javascript]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[css]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[markdown]": {
+      "files.trimTrailingWhitespace": false
+    },
+    "biome.enabled": true,
+    "biome.lspBin": null,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+    "typescript.suggest.autoImports": true,
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+    "javascript.preferences.importModuleSpecifier": "non-relative",
+    "javascript.updateImportsOnFileMove.enabled": "always"
+  };
 }
 function getVscodeExtensions() {
-  const extensionsPath = join3(packageRoot, "vscode", "extensions.json");
-  try {
-    return JSON.parse(readFileSync3(extensionsPath, "utf-8"));
-  } catch (error) {
-    throw new Error(`Failed to read VS Code extensions from ${extensionsPath}`, { cause: error });
-  }
+  return {
+    recommendations: [
+      "biomejs.biome",
+      "usernamehw.errorlens",
+      "editorconfig.editorconfig",
+      "streetsidesoftware.code-spell-checker",
+      "eamodio.gitlens",
+      "gruntfuggly.todo-tree"
+    ],
+    unwantedRecommendations: ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
+  };
 }
 function generateEditorConfig() {
   return `# EditorConfig helps maintain consistent coding styles
@@ -544,14 +587,14 @@ function executeInit(options) {
   } = options;
   const pmCommands = getPackageManagerCommands(packageManager);
   const tasks = [];
-  const biomePath = join4(cwd, "biome.json");
+  const biomePath = join3(cwd, "biome.json");
   if (!fileExists(biomePath) || force) {
     if (!dryRun) {
       writeJsonFile(biomePath, generateBiomeConfig());
     }
     tasks.push("biome.json");
   }
-  const tsconfigPath = join4(cwd, "tsconfig.json");
+  const tsconfigPath = join3(cwd, "tsconfig.json");
   if (!fileExists(tsconfigPath) || force) {
     if (!dryRun) {
       writeJsonFile(tsconfigPath, generateTsConfig(projectType));
@@ -559,8 +602,8 @@ function executeInit(options) {
     tasks.push("tsconfig.json");
   }
   if (projectType === "nextjs" || projectType === "react") {
-    const typesDir = join4(cwd, "src", "types");
-    const cssDeclarationPath = join4(typesDir, "css.d.ts");
+    const typesDir = join3(cwd, "src", "types");
+    const cssDeclarationPath = join3(typesDir, "css.d.ts");
     if (!fileExists(cssDeclarationPath) || force) {
       if (!dryRun) {
         if (!existsSync3(typesDir)) {
@@ -572,18 +615,18 @@ function executeInit(options) {
     }
   }
   if (vscode) {
-    const vscodeDir = join4(cwd, ".vscode");
+    const vscodeDir = join3(cwd, ".vscode");
     if (!(dryRun || existsSync3(vscodeDir))) {
       mkdirSync2(vscodeDir, { recursive: true });
     }
-    const settingsPath = join4(vscodeDir, "settings.json");
+    const settingsPath = join3(vscodeDir, "settings.json");
     if (!fileExists(settingsPath) || force) {
       if (!dryRun) {
         writeJsonFile(settingsPath, getVscodeSettings());
       }
       tasks.push(".vscode/settings.json");
     }
-    const extensionsPath = join4(vscodeDir, "extensions.json");
+    const extensionsPath = join3(vscodeDir, "extensions.json");
     if (!fileExists(extensionsPath) || force) {
       if (!dryRun) {
         writeJsonFile(extensionsPath, getVscodeExtensions());
@@ -611,7 +654,7 @@ function executeInit(options) {
       lintStagedAdded = true;
     }
     if ((scriptsAdded > 0 || lintStagedAdded) && !dryRun) {
-      writeJsonFile(join4(cwd, "package.json"), packageJson);
+      writeJsonFile(join3(cwd, "package.json"), packageJson);
     }
     if (scriptsAdded > 0) {
       tasks.push(`package.json (${scriptsAdded} scripts)`);
@@ -657,18 +700,18 @@ function executeInit(options) {
       }
       tasks.push("git init");
     }
-    const huskyDir = join4(cwd, ".husky");
+    const huskyDir = join3(cwd, ".husky");
     if (!(dryRun || existsSync3(huskyDir))) {
       mkdirSync2(huskyDir, { recursive: true });
     }
-    const preCommitPath = join4(huskyDir, "pre-commit");
+    const preCommitPath = join3(huskyDir, "pre-commit");
     if (!fileExists(preCommitPath) || force) {
       if (!dryRun) {
         writeFile(preCommitPath, generatePreCommitHook(pmCommands.exec, pmCommands.run), true);
       }
       tasks.push(".husky/pre-commit");
     }
-    const commitMsgPath = join4(huskyDir, "commit-msg");
+    const commitMsgPath = join3(huskyDir, "commit-msg");
     if (!fileExists(commitMsgPath) || force) {
       if (!dryRun) {
         writeFile(commitMsgPath, generateCommitMsgHook(commitlint, pmCommands.exec), true);
@@ -683,7 +726,7 @@ function executeInit(options) {
     }
   }
   if (commitlint) {
-    const commitlintPath = join4(cwd, "commitlint.config.js");
+    const commitlintPath = join3(cwd, "commitlint.config.js");
     if (!fileExists(commitlintPath) || force) {
       if (!dryRun) {
         writeFile(commitlintPath, generateCommitlintConfig());
@@ -692,7 +735,7 @@ function executeInit(options) {
     }
   }
   if (knip) {
-    const knipPath = join4(cwd, "knip.json");
+    const knipPath = join3(cwd, "knip.json");
     if (!fileExists(knipPath) || force) {
       if (!dryRun) {
         writeJsonFile(knipPath, generateKnipConfig(projectType));
@@ -704,7 +747,7 @@ function executeInit(options) {
       runCommand(cmd, [...baseArgs, "knip"], cwd);
     }
   }
-  const editorconfigPath = join4(cwd, ".editorconfig");
+  const editorconfigPath = join3(cwd, ".editorconfig");
   if (!fileExists(editorconfigPath) || force) {
     if (!dryRun) {
       writeFile(editorconfigPath, generateEditorConfig());
@@ -712,7 +755,7 @@ function executeInit(options) {
     tasks.push(".editorconfig");
   }
   if (claudeMd) {
-    const claudeMdPath = join4(cwd, "CLAUDE.md");
+    const claudeMdPath = join3(cwd, "CLAUDE.md");
     if (!fileExists(claudeMdPath) || force) {
       if (!dryRun) {
         writeFile(
@@ -856,7 +899,7 @@ var initCommand = defineCommand({
 });
 
 // bin/commands/upgrade.ts
-import { join as join5 } from "path";
+import { join as join4 } from "path";
 import * as p2 from "@clack/prompts";
 import { defineCommand as defineCommand2 } from "citty";
 import merge from "deepmerge";
@@ -961,40 +1004,40 @@ var upgradeCommand = defineCommand2({
     const configs = [
       {
         name: "biome.json",
-        path: join5(cwd, "biome.json"),
-        currentContent: readJsonFile(join5(cwd, "biome.json")),
+        path: join4(cwd, "biome.json"),
+        currentContent: readJsonFile(join4(cwd, "biome.json")),
         newDefaults: generateBiomeConfig(),
         requiresMerge: true
         // biome.json can be safely merged
       },
       {
         name: "tsconfig.json",
-        path: join5(cwd, "tsconfig.json"),
-        currentContent: readJsonFile(join5(cwd, "tsconfig.json")),
+        path: join4(cwd, "tsconfig.json"),
+        currentContent: readJsonFile(join4(cwd, "tsconfig.json")),
         newDefaults: generateTsConfig(projectType),
         requiresMerge: true
         // tsconfig.json should preserve user paths/includes
       },
       {
         name: "knip.json",
-        path: join5(cwd, "knip.json"),
-        currentContent: readJsonFile(join5(cwd, "knip.json")),
+        path: join4(cwd, "knip.json"),
+        currentContent: readJsonFile(join4(cwd, "knip.json")),
         newDefaults: generateKnipConfig(projectType),
         requiresMerge: true
         // knip.json should preserve user ignores
       },
       {
         name: ".vscode/settings.json",
-        path: join5(cwd, ".vscode", "settings.json"),
-        currentContent: readJsonFile(join5(cwd, ".vscode", "settings.json")),
+        path: join4(cwd, ".vscode", "settings.json"),
+        currentContent: readJsonFile(join4(cwd, ".vscode", "settings.json")),
         newDefaults: getVscodeSettings(),
         requiresMerge: true
         // VSCode settings should be merged
       },
       {
         name: ".vscode/extensions.json",
-        path: join5(cwd, ".vscode", "extensions.json"),
-        currentContent: readJsonFile(join5(cwd, ".vscode", "extensions.json")),
+        path: join4(cwd, ".vscode", "extensions.json"),
+        currentContent: readJsonFile(join4(cwd, ".vscode", "extensions.json")),
         newDefaults: getVscodeExtensions(),
         requiresMerge: true
         // Extensions can be merged
@@ -1073,7 +1116,7 @@ var upgradeCommand = defineCommand2({
     }
     if (packageJson && missingScripts.length > 0) {
       if (!(args2["no-backup"] || args2["dry-run"])) {
-        createBackup(join5(cwd, "package.json"));
+        createBackup(join4(cwd, "package.json"));
       }
       const scripts = packageJson.scripts || {};
       for (const name of missingScripts) {
@@ -1087,7 +1130,7 @@ var upgradeCommand = defineCommand2({
         packageJson["lint-staged"] = getLintStagedConfig();
       }
       if (!args2["dry-run"]) {
-        writeJsonFile(join5(cwd, "package.json"), packageJson);
+        writeJsonFile(join4(cwd, "package.json"), packageJson);
       }
       results.push({ name: "package.json", backupPath: null });
     }
