@@ -4,14 +4,14 @@
 import { defineCommand as defineCommand3, runCommand as runCommand2, runMain } from "citty";
 
 // bin/commands/init.ts
-import { existsSync as existsSync4, mkdirSync as mkdirSync2 } from "fs";
+import { existsSync as existsSync3, mkdirSync as mkdirSync2 } from "fs";
 import { join as join4 } from "path";
 import * as p from "@clack/prompts";
 import { defineCommand } from "citty";
 import pc from "picocolors";
 
 // bin/utils/constants.ts
-var VERSION = "1.0.0-beta.2";
+var VERSION = "1.0.0-beta.6";
 var PACKAGE_NAME = "@neosianexus/quality";
 
 // bin/utils/detect.ts
@@ -67,13 +67,23 @@ function isGitRepository(cwd) {
 function getPackageManagerCommands(pm) {
   switch (pm) {
     case "bun":
-      return { install: "bun install", addDev: ["bun", "add", "-D"], exec: "bunx" };
+      return { install: "bun install", addDev: ["bun", "add", "-D"], exec: "bunx", run: "bun run" };
     case "pnpm":
-      return { install: "pnpm install", addDev: ["pnpm", "add", "-D"], exec: "pnpm exec" };
+      return {
+        install: "pnpm install",
+        addDev: ["pnpm", "add", "-D"],
+        exec: "pnpm exec",
+        run: "pnpm run"
+      };
     case "yarn":
-      return { install: "yarn", addDev: ["yarn", "add", "-D"], exec: "yarn" };
+      return { install: "yarn", addDev: ["yarn", "add", "-D"], exec: "yarn", run: "yarn" };
     default:
-      return { install: "npm install", addDev: ["npm", "install", "-D"], exec: "npx" };
+      return {
+        install: "npm install",
+        addDev: ["npm", "install", "-D"],
+        exec: "npx",
+        run: "npm run"
+      };
   }
 }
 
@@ -152,14 +162,14 @@ function fileExists(filePath) {
 }
 
 // bin/utils/generators.ts
-import { existsSync as existsSync3, readFileSync as readFileSync3 } from "fs";
+import { readFileSync as readFileSync3 } from "fs";
 import { dirname as dirname2, join as join3 } from "path";
 import { fileURLToPath } from "url";
 var currentDir = dirname2(fileURLToPath(import.meta.url));
 var packageRoot = join3(currentDir, "..", "..");
 function generateBiomeConfig() {
   return {
-    $schema: "https://biomejs.dev/schemas/2.3.13/schema.json",
+    $schema: "https://biomejs.dev/schemas/latest/schema.json",
     extends: ["@neosianexus/quality"]
   };
 }
@@ -196,7 +206,7 @@ function generateCommitlintConfig() {
 export default config;
 `;
 }
-function generatePreCommitHook(execCommand) {
+function generatePreCommitHook(execCommand, runCommand3) {
   return `#!/bin/sh
 
 # Pre-commit hook - runs lint-staged to check and fix staged files
@@ -210,7 +220,7 @@ if ! ${execCommand} lint-staged; then
     echo ""
     echo "\\033[0;33mHow to fix:\\033[0m"
     echo "  1. Review the errors above"
-    echo "  2. Run 'bun run check:fix' to auto-fix issues"
+    echo "  2. Run '${runCommand3} check:fix' to auto-fix issues"
     echo "  3. Stage the fixed files with 'git add'"
     echo "  4. Try committing again"
     echo ""
@@ -252,65 +262,53 @@ fi
   return `#!/bin/sh
 
 # Conventional Commits validation (disabled)
-# To enable, run: bunx quality init --commitlint
-# Or manually install: bun add -D @commitlint/cli @commitlint/config-conventional
+# To enable, run: npx @neosianexus/quality init --commitlint
 `;
 }
 function getVscodeSettings() {
   const settingsPath = join3(packageRoot, "vscode", "settings.json");
-  if (existsSync3(settingsPath)) {
-    try {
-      return JSON.parse(readFileSync3(settingsPath, "utf-8"));
-    } catch {
-    }
+  try {
+    return JSON.parse(readFileSync3(settingsPath, "utf-8"));
+  } catch (error) {
+    throw new Error(`Failed to read VS Code settings from ${settingsPath}`, { cause: error });
   }
-  return {
-    "editor.defaultFormatter": "biomejs.biome",
-    "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "editor.codeActionsOnSave": {
-      "quickfix.biome": "explicit",
-      "source.organizeImports.biome": "explicit"
-    },
-    "editor.rulers": [100],
-    "editor.tabSize": 2,
-    "editor.insertSpaces": false,
-    "files.eol": "\n",
-    "files.trimTrailingWhitespace": true,
-    "files.insertFinalNewline": true,
-    "[javascript]": { "editor.defaultFormatter": "biomejs.biome" },
-    "[javascriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
-    "[typescript]": { "editor.defaultFormatter": "biomejs.biome" },
-    "[typescriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
-    "[json]": { "editor.defaultFormatter": "biomejs.biome" },
-    "[jsonc]": { "editor.defaultFormatter": "biomejs.biome" },
-    "[css]": { "editor.defaultFormatter": "biomejs.biome" },
-    "[markdown]": { "files.trimTrailingWhitespace": false },
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true,
-    "typescript.preferences.importModuleSpecifier": "non-relative",
-    "typescript.preferences.preferTypeOnlyAutoImports": true
-  };
 }
 function getVscodeExtensions() {
   const extensionsPath = join3(packageRoot, "vscode", "extensions.json");
-  if (existsSync3(extensionsPath)) {
-    try {
-      return JSON.parse(readFileSync3(extensionsPath, "utf-8"));
-    } catch {
-    }
+  try {
+    return JSON.parse(readFileSync3(extensionsPath, "utf-8"));
+  } catch (error) {
+    throw new Error(`Failed to read VS Code extensions from ${extensionsPath}`, { cause: error });
   }
-  return {
-    recommendations: [
-      "biomejs.biome",
-      "usernamehw.errorlens",
-      "editorconfig.editorconfig",
-      "streetsidesoftware.code-spell-checker",
-      "eamodio.gitlens",
-      "gruntfuggly.todo-tree"
-    ],
-    unwantedRecommendations: ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
-  };
+}
+function generateEditorConfig() {
+  return `# EditorConfig helps maintain consistent coding styles
+# https://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = tab
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.json]
+indent_style = tab
+indent_size = 2
+
+[*.sh]
+end_of_line = lf
+`;
 }
 function generateKnipConfig(type) {
   const baseConfig = {
@@ -455,76 +453,76 @@ async function promptInitOptions(defaults) {
   const options = await p.group(
     {
       projectType: () => p.select({
-        message: "Type de projet ?",
+        message: "Project type?",
         initialValue: defaults.projectType,
         options: [
           {
             value: "nextjs",
             label: "Next.js",
-            hint: defaults.projectType === "nextjs" ? "d\xE9tect\xE9" : void 0
+            hint: defaults.projectType === "nextjs" ? "detected" : void 0
           },
           {
             value: "react",
             label: "React",
-            hint: defaults.projectType === "react" ? "d\xE9tect\xE9" : void 0
+            hint: defaults.projectType === "react" ? "detected" : void 0
           },
           {
             value: "base",
             label: "Node.js / TypeScript",
-            hint: defaults.projectType === "base" ? "d\xE9tect\xE9" : void 0
+            hint: defaults.projectType === "base" ? "detected" : void 0
           }
         ]
       }),
       packageManager: () => p.select({
-        message: "Package manager ?",
+        message: "Package manager?",
         initialValue: defaults.packageManager,
         options: [
           {
             value: "bun",
             label: "Bun",
-            hint: defaults.packageManager === "bun" ? "d\xE9tect\xE9" : "recommand\xE9"
+            hint: defaults.packageManager === "bun" ? "detected" : "recommended"
           },
           {
             value: "pnpm",
             label: "pnpm",
-            hint: defaults.packageManager === "pnpm" ? "d\xE9tect\xE9" : void 0
+            hint: defaults.packageManager === "pnpm" ? "detected" : void 0
           },
           {
             value: "yarn",
             label: "Yarn",
-            hint: defaults.packageManager === "yarn" ? "d\xE9tect\xE9" : void 0
+            hint: defaults.packageManager === "yarn" ? "detected" : void 0
           },
           {
             value: "npm",
             label: "npm",
-            hint: defaults.packageManager === "npm" ? "d\xE9tect\xE9" : void 0
+            hint: defaults.packageManager === "npm" ? "detected" : void 0
           }
         ]
       }),
       commitlint: () => p.confirm({
-        message: "Activer Conventional Commits (commitlint) ?",
+        message: "Enable Conventional Commits (commitlint)?",
         initialValue: true
       }),
       husky: () => p.confirm({
-        message: "Configurer les git hooks (Husky + lint-staged) ?",
+        message: "Set up git hooks (Husky + lint-staged)?",
         initialValue: true
       }),
       vscode: () => p.confirm({
-        message: "Ajouter la configuration VS Code ?",
+        message: "Add VS Code configuration?",
         initialValue: true
       }),
       knip: () => p.confirm({
-        message: "Ajouter Knip (d\xE9tection de code mort) ?",
+        message: "Add Knip (dead code detection)?",
         initialValue: true
       }),
       claudeMd: () => p.confirm({
-        message: "Cr\xE9er CLAUDE.md (instructions pour Claude Code) ?",
+        message: "Create CLAUDE.md (instructions for Claude Code)?",
         initialValue: true
       })
     },
     {
       onCancel: () => {
-        p.cancel("Annul\xE9.");
+        p.cancel("Cancelled.");
         process.exit(0);
       }
     }
@@ -565,7 +563,7 @@ function executeInit(options) {
     const cssDeclarationPath = join4(typesDir, "css.d.ts");
     if (!fileExists(cssDeclarationPath) || force) {
       if (!dryRun) {
-        if (!existsSync4(typesDir)) {
+        if (!existsSync3(typesDir)) {
           mkdirSync2(typesDir, { recursive: true });
         }
         writeFile(cssDeclarationPath, 'declare module "*.css";\n');
@@ -575,7 +573,7 @@ function executeInit(options) {
   }
   if (vscode) {
     const vscodeDir = join4(cwd, ".vscode");
-    if (!(dryRun || existsSync4(vscodeDir))) {
+    if (!(dryRun || existsSync3(vscodeDir))) {
       mkdirSync2(vscodeDir, { recursive: true });
     }
     const settingsPath = join4(vscodeDir, "settings.json");
@@ -607,15 +605,33 @@ function executeInit(options) {
     if (scriptsAdded > 0) {
       packageJson.scripts = scripts;
     }
+    let lintStagedAdded = false;
     if (husky && !packageJson["lint-staged"]) {
       packageJson["lint-staged"] = getLintStagedConfig();
+      lintStagedAdded = true;
     }
-    if (!dryRun) {
+    if ((scriptsAdded > 0 || lintStagedAdded) && !dryRun) {
       writeJsonFile(join4(cwd, "package.json"), packageJson);
     }
     if (scriptsAdded > 0) {
       tasks.push(`package.json (${scriptsAdded} scripts)`);
     }
+  }
+  {
+    const coreDeps = ["@biomejs/biome", "typescript"];
+    if (!dryRun) {
+      const spinner3 = p.spinner();
+      spinner3.start(`Installing core dependencies (${packageManager})...`);
+      const [cmd, ...baseArgs] = pmCommands.addDev;
+      const result = runCommand(cmd, [...baseArgs, ...coreDeps], cwd);
+      if (result.success) {
+        spinner3.stop("Core dependencies installed");
+      } else {
+        spinner3.stop("Installation failed");
+        p.log.warn(`Install manually: ${pmCommands.addDev.join(" ")} ${coreDeps.join(" ")}`);
+      }
+    }
+    tasks.push(`dependencies: ${coreDeps.join(", ")}`);
   }
   if (husky) {
     const deps = ["husky", "lint-staged"];
@@ -624,17 +640,17 @@ function executeInit(options) {
     }
     if (!dryRun) {
       const spinner3 = p.spinner();
-      spinner3.start(`Installation des d\xE9pendances (${packageManager})...`);
+      spinner3.start(`Installing hook dependencies (${packageManager})...`);
       const [cmd, ...baseArgs] = pmCommands.addDev;
       const result = runCommand(cmd, [...baseArgs, ...deps], cwd);
       if (result.success) {
-        spinner3.stop("D\xE9pendances install\xE9es");
+        spinner3.stop("Hook dependencies installed");
       } else {
-        spinner3.stop("\xC9chec de l'installation");
-        p.log.warn(`Installez manuellement: ${pmCommands.addDev.join(" ")} ${deps.join(" ")}`);
+        spinner3.stop("Installation failed");
+        p.log.warn(`Install manually: ${pmCommands.addDev.join(" ")} ${deps.join(" ")}`);
       }
     }
-    tasks.push(`d\xE9pendances: ${deps.join(", ")}`);
+    tasks.push(`dependencies: ${deps.join(", ")}`);
     if (!isGitRepository(cwd)) {
       if (!dryRun) {
         runCommand("git", ["init"], cwd);
@@ -642,13 +658,13 @@ function executeInit(options) {
       tasks.push("git init");
     }
     const huskyDir = join4(cwd, ".husky");
-    if (!(dryRun || existsSync4(huskyDir))) {
+    if (!(dryRun || existsSync3(huskyDir))) {
       mkdirSync2(huskyDir, { recursive: true });
     }
     const preCommitPath = join4(huskyDir, "pre-commit");
     if (!fileExists(preCommitPath) || force) {
       if (!dryRun) {
-        writeFile(preCommitPath, generatePreCommitHook(pmCommands.exec), true);
+        writeFile(preCommitPath, generatePreCommitHook(pmCommands.exec, pmCommands.run), true);
       }
       tasks.push(".husky/pre-commit");
     }
@@ -660,7 +676,10 @@ function executeInit(options) {
       tasks.push(".husky/commit-msg");
     }
     if (!dryRun) {
-      runCommand("npx", ["husky"], cwd);
+      const parts = pmCommands.exec.split(" ");
+      const execCmd = parts[0] ?? "npx";
+      const execArgs = parts.slice(1);
+      runCommand(execCmd, [...execArgs, "husky"], cwd);
     }
   }
   if (commitlint) {
@@ -685,6 +704,13 @@ function executeInit(options) {
       runCommand(cmd, [...baseArgs, "knip"], cwd);
     }
   }
+  const editorconfigPath = join4(cwd, ".editorconfig");
+  if (!fileExists(editorconfigPath) || force) {
+    if (!dryRun) {
+      writeFile(editorconfigPath, generateEditorConfig());
+    }
+    tasks.push(".editorconfig");
+  }
   if (claudeMd) {
     const claudeMdPath = join4(cwd, "CLAUDE.md");
     if (!fileExists(claudeMdPath) || force) {
@@ -702,7 +728,7 @@ function executeInit(options) {
       tasks.push("CLAUDE.md");
     }
   }
-  return;
+  return tasks;
 }
 var initCommand = defineCommand({
   meta: {
@@ -767,7 +793,7 @@ var initCommand = defineCommand({
     const detectedType = detectProjectType(cwd);
     p.intro(`${pc.cyan(pc.bold(PACKAGE_NAME))} ${pc.dim(`v${VERSION}`)}`);
     if (args2["dry-run"]) {
-      p.log.warn(pc.yellow("Mode dry-run: aucun fichier ne sera modifi\xE9"));
+      p.log.warn(pc.yellow("Dry-run mode: no files will be modified"));
     }
     let options;
     if (args2.yes) {
@@ -783,7 +809,7 @@ var initCommand = defineCommand({
         force: args2.force,
         dryRun: args2["dry-run"]
       };
-      p.log.info(`Projet: ${pc.cyan(options.projectType)}`);
+      p.log.info(`Project: ${pc.cyan(options.projectType)}`);
       p.log.info(`Package manager: ${pc.cyan(options.packageManager)}`);
     } else {
       const prompted = await promptInitOptions({
@@ -801,30 +827,31 @@ var initCommand = defineCommand({
       };
     }
     const spinner3 = p.spinner();
-    spinner3.start("Configuration en cours...");
-    executeInit(options);
-    spinner3.stop("Configuration termin\xE9e");
-    p.log.success(pc.green("Setup termin\xE9 !"));
+    spinner3.start("Configuring...");
+    const tasks = executeInit(options);
+    spinner3.stop("Configuration complete");
+    const pmRun = options.packageManager === "npm" ? "npm run" : options.packageManager;
+    p.log.success(pc.green(`Setup complete! (${tasks.length} files created/updated)`));
     p.note(
       [
-        `${pc.cyan("Scripts disponibles:")}`,
-        `  ${pc.dim("bun run")} check      ${pc.dim("# Lint + Format")}`,
-        `  ${pc.dim("bun run")} check:fix  ${pc.dim("# Auto-fix")}`,
-        `  ${pc.dim("bun run")} typecheck  ${pc.dim("# TypeScript")}`,
-        options.knip ? `  ${pc.dim("bun run")} knip       ${pc.dim("# Code mort")}` : "",
+        `${pc.cyan("Available scripts:")}`,
+        `  ${pc.dim(pmRun)} check      ${pc.dim("# Lint + Format")}`,
+        `  ${pc.dim(pmRun)} check:fix  ${pc.dim("# Auto-fix")}`,
+        `  ${pc.dim(pmRun)} typecheck  ${pc.dim("# TypeScript")}`,
+        options.knip ? `  ${pc.dim(pmRun)} knip       ${pc.dim("# Dead code")}` : "",
         "",
         options.commitlint ? [
-          `${pc.cyan("Format des commits:")}`,
-          `  ${pc.green("feat")}: nouvelle fonctionnalit\xE9`,
-          `  ${pc.green("fix")}: correction de bug`,
+          `${pc.cyan("Commit format:")}`,
+          `  ${pc.green("feat")}: new feature`,
+          `  ${pc.green("fix")}: bug fix`,
           `  ${pc.green("docs")}: documentation`
-        ].join("\n") : `${pc.dim("Tip: Ajoutez commitlint avec")} quality init --commitlint`,
+        ].join("\n") : `${pc.dim("Tip: Add commitlint with")} quality init --commitlint`,
         "",
-        options.claudeMd ? `${pc.cyan("CLAUDE.md cr\xE9\xE9")} ${pc.dim("- Instructions pour Claude Code")}` : `${pc.dim("Tip: Ajoutez CLAUDE.md avec")} quality init --claude-md`
+        options.claudeMd ? `${pc.cyan("CLAUDE.md created")} ${pc.dim("- Instructions for Claude Code")}` : `${pc.dim("Tip: Add CLAUDE.md with")} quality init --claude-md`
       ].filter(Boolean).join("\n"),
-      "Prochaines \xE9tapes"
+      "Next steps"
     );
-    p.outro(`${pc.dim("Documentation:")} ${pc.cyan("https://github.com/neosianexus/quality")}`);
+    p.outro(`${pc.dim("Documentation:")} ${pc.cyan("https://github.com/NeosiaNexus/quality")}`);
   }
 });
 
@@ -846,20 +873,27 @@ function analyzeChanges(current, updated) {
   const added = [];
   const modified = [];
   const removed = [];
-  const currentKeys = new Set(Object.keys(current));
-  const updatedKeys = new Set(Object.keys(updated));
-  for (const key of updatedKeys) {
-    if (!currentKeys.has(key)) {
-      added.push(key);
-    } else if (JSON.stringify(current[key]) !== JSON.stringify(updated[key])) {
-      modified.push(key);
+  function compare(curr, upd, prefix) {
+    const currKeys = new Set(Object.keys(curr));
+    const updKeys = new Set(Object.keys(upd));
+    for (const key of updKeys) {
+      const path = prefix ? `${prefix}.${key}` : key;
+      if (!currKeys.has(key)) {
+        added.push(path);
+      } else if (typeof curr[key] === "object" && curr[key] !== null && !Array.isArray(curr[key]) && typeof upd[key] === "object" && upd[key] !== null && !Array.isArray(upd[key])) {
+        compare(curr[key], upd[key], path);
+      } else if (JSON.stringify(curr[key]) !== JSON.stringify(upd[key])) {
+        modified.push(path);
+      }
+    }
+    for (const key of currKeys) {
+      const path = prefix ? `${prefix}.${key}` : key;
+      if (!updKeys.has(key)) {
+        removed.push(path);
+      }
     }
   }
-  for (const key of currentKeys) {
-    if (!updatedKeys.has(key)) {
-      removed.push(key);
-    }
-  }
+  compare(current, updated, "");
   return { added, modified, removed };
 }
 function upgradeConfigFile(config, options) {
@@ -922,7 +956,7 @@ var upgradeCommand = defineCommand2({
     const projectType = detectProjectType(cwd);
     p2.intro(`${pc2.cyan(pc2.bold(PACKAGE_NAME))} ${pc2.magenta("upgrade")} ${pc2.dim(`v${VERSION}`)}`);
     if (args2["dry-run"]) {
-      p2.log.warn(pc2.yellow("Mode dry-run: aucun fichier ne sera modifi\xE9"));
+      p2.log.warn(pc2.yellow("Dry-run mode: no files will be modified"));
     }
     const configs = [
       {
@@ -992,14 +1026,14 @@ var upgradeCommand = defineCommand2({
       }
     }
     if (toUpgrade.length === 0 && missingScripts.length === 0) {
-      p2.log.success("Toutes les configurations sont \xE0 jour !");
-      p2.outro(pc2.dim("Rien \xE0 faire."));
+      p2.log.success("All configurations are up to date!");
+      p2.outro(pc2.dim("Nothing to do."));
       return;
     }
-    p2.log.info(pc2.cyan("Fichiers \xE0 mettre \xE0 jour:"));
+    p2.log.info(pc2.cyan("Files to update:"));
     for (const { config, changes, isNew } of toUpgrade) {
       if (isNew) {
-        p2.log.step(`  ${pc2.green("+")} ${config.name} ${pc2.dim("(nouveau)")}`);
+        p2.log.step(`  ${pc2.green("+")} ${config.name} ${pc2.dim("(new)")}`);
       } else {
         const parts = [];
         if (changes.added.length > 0) {
@@ -1016,16 +1050,16 @@ var upgradeCommand = defineCommand2({
     }
     if (!(args2.yes || args2["dry-run"])) {
       const shouldContinue = await p2.confirm({
-        message: args2["no-backup"] ? "Continuer sans backup ?" : "Continuer ? (les fichiers seront sauvegard\xE9s)",
+        message: args2["no-backup"] ? "Continue without backup?" : "Continue? (files will be backed up)",
         initialValue: true
       });
       if (!shouldContinue || p2.isCancel(shouldContinue)) {
-        p2.cancel("Annul\xE9.");
+        p2.cancel("Cancelled.");
         process.exit(0);
       }
     }
     const spinner3 = p2.spinner();
-    spinner3.start("Mise \xE0 jour des configurations...");
+    spinner3.start("Updating configurations...");
     const results = [];
     for (const { config } of toUpgrade) {
       const result = upgradeConfigFile(config, {
@@ -1057,16 +1091,16 @@ var upgradeCommand = defineCommand2({
       }
       results.push({ name: "package.json", backupPath: null });
     }
-    spinner3.stop("Mise \xE0 jour termin\xE9e");
-    p2.log.success(pc2.green(`${results.length} fichier(s) mis \xE0 jour`));
+    spinner3.stop("Update complete");
+    p2.log.success(pc2.green(`${results.length} file(s) updated`));
     const backups = results.filter((r) => r.backupPath);
     if (backups.length > 0) {
-      p2.note(backups.map((b) => `${pc2.dim(b.backupPath)}`).join("\n"), "Backups cr\xE9\xE9s");
+      p2.note(backups.map((b) => `${pc2.dim(b.backupPath)}`).join("\n"), "Backups created");
     }
     if (args2["dry-run"]) {
-      p2.note("Ex\xE9cutez sans --dry-run pour appliquer les changements", "Mode dry-run");
+      p2.note("Run without --dry-run to apply changes", "Dry-run mode");
     }
-    p2.outro(pc2.green("Configuration mise \xE0 jour !"));
+    p2.outro(pc2.green("Configuration updated!"));
   }
 });
 

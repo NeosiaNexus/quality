@@ -11,6 +11,7 @@ import {
 	generateClaudeMd,
 	generateCommitlintConfig,
 	generateCommitMsgHook,
+	generateEditorConfig,
 	generateKnipConfig,
 	generatePreCommitHook,
 	generateTsConfig,
@@ -54,82 +55,82 @@ async function promptInitOptions(defaults: {
 		{
 			projectType: () =>
 				p.select({
-					message: "Type de projet ?",
+					message: "Project type?",
 					initialValue: defaults.projectType,
 					options: [
 						{
 							value: "nextjs" as const,
 							label: "Next.js",
-							hint: defaults.projectType === "nextjs" ? "détecté" : undefined,
+							hint: defaults.projectType === "nextjs" ? "detected" : undefined,
 						},
 						{
 							value: "react" as const,
 							label: "React",
-							hint: defaults.projectType === "react" ? "détecté" : undefined,
+							hint: defaults.projectType === "react" ? "detected" : undefined,
 						},
 						{
 							value: "base" as const,
 							label: "Node.js / TypeScript",
-							hint: defaults.projectType === "base" ? "détecté" : undefined,
+							hint: defaults.projectType === "base" ? "detected" : undefined,
 						},
 					],
 				}),
 			packageManager: () =>
 				p.select({
-					message: "Package manager ?",
+					message: "Package manager?",
 					initialValue: defaults.packageManager,
 					options: [
 						{
 							value: "bun" as const,
 							label: "Bun",
-							hint: defaults.packageManager === "bun" ? "détecté" : "recommandé",
+							hint: defaults.packageManager === "bun" ? "detected" : "recommended",
 						},
 						{
 							value: "pnpm" as const,
 							label: "pnpm",
-							hint: defaults.packageManager === "pnpm" ? "détecté" : undefined,
+							hint: defaults.packageManager === "pnpm" ? "detected" : undefined,
 						},
 						{
 							value: "yarn" as const,
 							label: "Yarn",
-							hint: defaults.packageManager === "yarn" ? "détecté" : undefined,
+							hint: defaults.packageManager === "yarn" ? "detected" : undefined,
 						},
 						{
 							value: "npm" as const,
 							label: "npm",
-							hint: defaults.packageManager === "npm" ? "détecté" : undefined,
+							hint: defaults.packageManager === "npm" ? "detected" : undefined,
 						},
 					],
 				}),
 			commitlint: () =>
 				p.confirm({
-					message: "Activer Conventional Commits (commitlint) ?",
+					message: "Enable Conventional Commits (commitlint)?",
 					initialValue: true,
 				}),
 			husky: () =>
 				p.confirm({
-					message: "Configurer les git hooks (Husky + lint-staged) ?",
+					message: "Set up git hooks (Husky + lint-staged)?",
 					initialValue: true,
 				}),
 			vscode: () =>
 				p.confirm({
-					message: "Ajouter la configuration VS Code ?",
+					message: "Add VS Code configuration?",
 					initialValue: true,
 				}),
 			knip: () =>
 				p.confirm({
-					message: "Ajouter Knip (détection de code mort) ?",
+					message: "Add Knip (dead code detection)?",
 					initialValue: true,
 				}),
 			claudeMd: () =>
 				p.confirm({
-					message: "Créer CLAUDE.md (instructions pour Claude Code) ?",
+					message: "Create CLAUDE.md (instructions for Claude Code)?",
 					initialValue: true,
 				}),
 		},
 		{
 			onCancel: () => {
-				p.cancel("Annulé.");
+				p.cancel("Cancelled.");
 				process.exit(0);
 			},
 		},
@@ -141,7 +142,7 @@ async function promptInitOptions(defaults: {
 /**
  * Execute the init command
  */
-function executeInit(options: InitOptions): void {
+function executeInit(options: InitOptions): string[] {
 	const {
 		cwd,
 		packageManager,
@@ -236,11 +237,13 @@ function executeInit(options: InitOptions): void {
 		}
 
 		// Add lint-staged config if husky is enabled
+		let lintStagedAdded = false;
 		if (husky && !packageJson["lint-staged"]) {
 			packageJson["lint-staged"] = getLintStagedConfig();
+			lintStagedAdded = true;
 		}
 
-		if (!dryRun) {
+		if ((scriptsAdded > 0 || lintStagedAdded) && !dryRun) {
 			writeJsonFile(join(cwd, "package.json"), packageJson);
 		}
 
@@ -249,7 +252,29 @@ function executeInit(options: InitOptions): void {
 		}
 	}
 
-	// 5. Install dependencies and setup Husky
+	// 5. Install core peer dependencies (biome + typescript)
+	{
+		const coreDeps = ["@biomejs/biome", "typescript"];
+
+		if (!dryRun) {
+			const spinner = p.spinner();
+			spinner.start(`Installing core dependencies (${packageManager})...`);
+
+			const [cmd, ...baseArgs] = pmCommands.addDev as [string, ...string[]];
+			const result = runCommand(cmd, [...baseArgs, ...coreDeps], cwd);
+
+			if (result.success) {
+				spinner.stop("Core dependencies installed");
+			} else {
+				spinner.stop("Installation failed");
+				p.log.warn(`Install manually: ${pmCommands.addDev.join(" ")} ${coreDeps.join(" ")}`);
+			}
+		}
+
+		tasks.push(`dependencies: ${coreDeps.join(", ")}`);
+	}
+
+	// 6. Install Husky/lint-staged and setup git hooks
 	if (husky) {
 		const deps = ["husky", "lint-staged"];
 		if (commitlint) {
@@ -258,20 +283,20 @@ function executeInit(options: InitOptions): void {
 
 		if (!dryRun) {
 			const spinner = p.spinner();
-			spinner.start(`Installation des dépendances (${packageManager})...`);
+			spinner.start(`Installing hook dependencies (${packageManager})...`);
 
 			const [cmd, ...baseArgs] = pmCommands.addDev as [string, ...string[]];
 			const result = runCommand(cmd, [...baseArgs, ...deps], cwd);
 
 			if (result.success) {
-				spinner.stop("Dépendances installées");
+				spinner.stop("Hook dependencies installed");
 			} else {
-				spinner.stop("Échec de l'installation");
-				p.log.warn(`Installez manuellement: ${pmCommands.addDev.join(" ")} ${deps.join(" ")}`);
+				spinner.stop("Installation failed");
+				p.log.warn(`Install manually: ${pmCommands.addDev.join(" ")} ${deps.join(" ")}`);
 			}
 		}
 
-		tasks.push(`dépendances: ${deps.join(", ")}`);
+		tasks.push(`dependencies: ${deps.join(", ")}`);
 
 		// Initialize git if needed
 		if (!isGitRepository(cwd)) {
@@ -290,7 +315,7 @@ function executeInit(options: InitOptions): void {
 		const preCommitPath = join(huskyDir, "pre-commit");
 		if (!fileExists(preCommitPath) || force) {
 			if (!dryRun) {
-				writeFile(preCommitPath, generatePreCommitHook(pmCommands.exec), true);
+				writeFile(preCommitPath, generatePreCommitHook(pmCommands.exec, pmCommands.run), true);
 			}
 			tasks.push(".husky/pre-commit");
 		}
@@ -303,13 +328,16 @@ function executeInit(options: InitOptions): void {
 			tasks.push(".husky/commit-msg");
 		}
 
-		// Initialize husky
+		// Initialize husky using detected package manager
 		if (!dryRun) {
-			runCommand("npx", ["husky"], cwd);
+			const parts = pmCommands.exec.split(" ");
+			const execCmd = parts[0] ?? "npx";
+			const execArgs = parts.slice(1);
+			runCommand(execCmd, [...execArgs, "husky"], cwd);
 		}
 	}
 
-	// 6. Create commitlint config
+	// 7. Create commitlint config
 	if (commitlint) {
 		const commitlintPath = join(cwd, "commitlint.config.js");
 		if (!fileExists(commitlintPath) || force) {
@@ -320,7 +348,7 @@ function executeInit(options: InitOptions): void {
 		}
 	}
 
-	// 7. Create knip config
+	// 8. Create knip config
 	if (knip) {
 		const knipPath = join(cwd, "knip.json");
 		if (!fileExists(knipPath) || force) {
@@ -337,7 +365,16 @@ function executeInit(options: InitOptions): void {
 		}
 	}
 
-	// 8. Create CLAUDE.md
+	// 9. Create .editorconfig
+	const editorconfigPath = join(cwd, ".editorconfig");
+	if (!fileExists(editorconfigPath) || force) {
+		if (!dryRun) {
+			writeFile(editorconfigPath, generateEditorConfig());
+		}
+		tasks.push(".editorconfig");
+	}
+
+	// 10. Create CLAUDE.md
 	if (claudeMd) {
 		const claudeMdPath = join(cwd, "CLAUDE.md");
 		if (!fileExists(claudeMdPath) || force) {
@@ -356,7 +393,7 @@ function executeInit(options: InitOptions): void {
 		}
 	}
 
-	return;
+	return tasks;
 }
 
 export const initCommand = defineCommand({
@@ -424,7 +461,7 @@ export const initCommand = defineCommand({
 		p.intro(`${pc.cyan(pc.bold(PACKAGE_NAME))} ${pc.dim(`v${VERSION}`)}`);
 
 		if (args["dry-run"]) {
-			p.log.warn(pc.yellow("Mode dry-run: aucun fichier ne sera modifié"));
+			p.log.warn(pc.yellow("Dry-run mode: no files will be modified"));
 		}
 
 		let options: InitOptions;
@@ -444,7 +481,7 @@ export const initCommand = defineCommand({
 				dryRun: args["dry-run"],
 			};
 
-			p.log.info(`Projet: ${pc.cyan(options.projectType)}`);
+			p.log.info(`Project: ${pc.cyan(options.projectType)}`);
 			p.log.info(`Package manager: ${pc.cyan(options.packageManager)}`);
 		} else {
 			// Interactive mode
@@ -466,41 +503,43 @@ export const initCommand = defineCommand({
 		}
 
 		const spinner = p.spinner();
-		spinner.start("Configuration en cours...");
+		spinner.start("Configuring...");
 
-		executeInit(options);
+		const tasks = executeInit(options);
 
-		spinner.stop("Configuration terminée");
+		spinner.stop("Configuration complete");
 
 		// Summary
-		p.log.success(pc.green("Setup terminé !"));
+		const pmRun = options.packageManager === "npm" ? "npm run" : options.packageManager;
+
+		p.log.success(pc.green(`Setup complete! (${tasks.length} files created/updated)`));
 
 		p.note(
 			[
-				`${pc.cyan("Scripts disponibles:")}`,
-				`  ${pc.dim("bun run")} check      ${pc.dim("# Lint + Format")}`,
-				`  ${pc.dim("bun run")} check:fix  ${pc.dim("# Auto-fix")}`,
-				`  ${pc.dim("bun run")} typecheck  ${pc.dim("# TypeScript")}`,
-				options.knip ? `  ${pc.dim("bun run")} knip       ${pc.dim("# Code mort")}` : "",
+				`${pc.cyan("Available scripts:")}`,
+				`  ${pc.dim(pmRun)} check      ${pc.dim("# Lint + Format")}`,
+				`  ${pc.dim(pmRun)} check:fix  ${pc.dim("# Auto-fix")}`,
+				`  ${pc.dim(pmRun)} typecheck  ${pc.dim("# TypeScript")}`,
+				options.knip ? `  ${pc.dim(pmRun)} knip       ${pc.dim("# Dead code")}` : "",
 				"",
 				options.commitlint
 					? [
-							`${pc.cyan("Format des commits:")}`,
-							`  ${pc.green("feat")}: nouvelle fonctionnalité`,
-							`  ${pc.green("fix")}: correction de bug`,
+							`${pc.cyan("Commit format:")}`,
+							`  ${pc.green("feat")}: new feature`,
+							`  ${pc.green("fix")}: bug fix`,
 							`  ${pc.green("docs")}: documentation`,
 						].join("\n")
-					: `${pc.dim("Tip: Ajoutez commitlint avec")} quality init --commitlint`,
+					: `${pc.dim("Tip: Add commitlint with")} quality init --commitlint`,
 				"",
 				options.claudeMd
-					? `${pc.cyan("CLAUDE.md créé")} ${pc.dim("- Instructions pour Claude Code")}`
-					: `${pc.dim("Tip: Ajoutez CLAUDE.md avec")} quality init --claude-md`,
+					? `${pc.cyan("CLAUDE.md created")} ${pc.dim("- Instructions for Claude Code")}`
+					: `${pc.dim("Tip: Add CLAUDE.md with")} quality init --claude-md`,
 			]
 				.filter(Boolean)
 				.join("\n"),
-			"Prochaines étapes",
+			"Next steps",
 		);
 
-		p.outro(`${pc.dim("Documentation:")} ${pc.cyan("https://github.com/neosianexus/quality")}`);
+		p.outro(`${pc.dim("Documentation:")} ${pc.cyan("https://github.com/NeosiaNexus/quality")}`);
 	},
 });

@@ -77,15 +77,26 @@ export function getPackageManagerCommands(pm: PackageManager): {
 	install: string;
 	addDev: string[];
 	exec: string;
+	run: string;
 } {
 	switch (pm) {
 		case "bun":
-			return { install: "bun install", addDev: ["bun", "add", "-D"], exec: "bunx" };
+			return { install: "bun install", addDev: ["bun", "add", "-D"], exec: "bunx", run: "bun run" };
 		case "pnpm":
-			return { install: "pnpm install", addDev: ["pnpm", "add", "-D"], exec: "pnpm exec" };
+			return {
+				install: "pnpm install",
+				addDev: ["pnpm", "add", "-D"],
+				exec: "pnpm exec",
+				run: "pnpm run",
+			};
 		case "yarn":
-			return { install: "yarn", addDev: ["yarn", "add", "-D"], exec: "yarn" };
+			return { install: "yarn", addDev: ["yarn", "add", "-D"], exec: "yarn", run: "yarn" };
 		default:
-			return { install: "npm install", addDev: ["npm", "install", "-D"], exec: "npx" };
+			return {
+				install: "npm install",
+				addDev: ["npm", "install", "-D"],
+				exec: "npx",
+				run: "npm run",
+			};
 	}
 }

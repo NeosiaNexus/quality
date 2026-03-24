@@ -124,33 +124,33 @@ When you run `quality init` without flags, you'll see an interactive wizard:
 ```
 ┌  @neosianexus/quality v1.0.0
 │
-◇  Type de projet ?
-│  ● Next.js (détecté)
+◇  Project type?
+│  ● Next.js (detected)
 │  ○ React
 │  ○ Node.js / TypeScript
 │
-◇  Gestionnaire de paquets ?
-│  ● bun (détecté)
+◇  Package manager?
+│  ● bun (detected)
 │  ○ pnpm
 │  ○ yarn
 │  ○ npm
 │
-◇  Activer Conventional Commits (commitlint) ?
-│  ● Oui / ○ Non
+◇  Enable Conventional Commits (commitlint)?
+│  Yes / No
 │
-◇  Configurer les hooks Git (Husky + lint-staged) ?
-│  ● Oui / ○ Non
+◇  Set up git hooks (Husky + lint-staged)?
+│  Yes / No
 │
-◇  Ajouter la configuration VS Code ?
-│  ● Oui / ○ Non
+◇  Add VS Code configuration?
+│  Yes / No
 │
-◇  Ajouter Knip pour la détection du code mort ?
-│  ● Oui / ○ Non
+◇  Add Knip (dead code detection)?
+│  Yes / No
 │
-◇  Générer CLAUDE.md pour l'assistant IA ?
-│  ● Oui / ○ Non
+◇  Create CLAUDE.md (instructions for Claude Code)?
+│  Yes / No
 │
-◆  Configuration en cours...
+◆  Configuring...
 ```
 
 #### Usage Examples
@@ -266,7 +266,7 @@ npx @neosianexus/quality upgrade --yes --no-backup
 ```
 ┌  @neosianexus/quality upgrade
 │
-◇  Analyse des fichiers de configuration...
+◇  Files to update:
 │
 │  biome.json
 │    + linter.rules.nursery.noSecrets: "error"
@@ -276,11 +276,11 @@ npx @neosianexus/quality upgrade --yes --no-backup
 │  tsconfig.json
 │    + compilerOptions.noUncheckedSideEffectImports: true
 │
-◇  Appliquer ces modifications ?
-│  ● Oui / ○ Non
+◇  Continue? (files will be backed up)
+│  Yes / No
 │
-◆  Sauvegarde créée: biome.backup.2026-02-01T14-30-45.json
-◆  Configuration mise à jour avec succès !
+◆  Backup created: biome.backup.2026-02-01T14-30-45.json
+◆  Configuration updated!
 ```
 
 ---

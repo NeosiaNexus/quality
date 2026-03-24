@@ -5,8 +5,7 @@
 	"type": "module",
 	"main": "./biome.json",
 	"bin": {
-		"quality": "./bin/cli.js",
-		"quality-init": "./bin/cli.js"
+		"quality": "./bin/cli.js"
 	},
 	"engines": {
 		"node": ">=18.0.0"
@@ -21,6 +20,7 @@
 	},
 	"exports": {
 		".": "./biome.json",
+		"./package.json": "./package.json",
 		"./biome.json": "./biome.json",
 		"./biome": "./biome.json",
 		"./tsconfig.base": "./tsconfig.base.json",
@@ -57,7 +57,9 @@
 		"knip": "knip",
 		"publint": "publint",
 		"attw": "attw --pack .",
-		"dev": "bun run bin/cli.ts"
+		"dev": "bun run bin/cli.ts",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"keywords": [
 		"biome",
@@ -83,7 +85,9 @@
 		"url": "git+https://github.com/NeosiaNexus/quality.git"
 	},
 	"peerDependencies": {
-		"@biomejs/biome": "^2.0.0",
+		"@biomejs/biome": ">=2.3.0",
+		"@commitlint/cli": "^19.0.0",
+		"@commitlint/config-conventional": "^19.0.0",
 		"typescript": "^5.0.0"
 	},
 	"peerDependenciesMeta": {
@@ -110,6 +114,7 @@
 		"knip": "^5.82.1",
 		"publint": "^0.3.17",
 		"tsup": "^8.5.0",
-		"typescript": "^5.8.3"
+		"typescript": "^5.8.3",
+		"vitest": "^4.1.1"
 	}
 }

@@ -41,9 +41,9 @@ function smartMerge<T extends Record<string, unknown>>(defaults: T, userConfig: 
 }
 
 /**
- * Analyze differences between current and new config
+ * Recursively analyze differences between current and new config
  */
-function analyzeChanges(
+export function analyzeChanges(
 	current: Record<string, unknown>,
 	updated: Record<string, unknown>,
 ): { added: string[]; modified: string[]; removed: string[] } {
@@ -51,23 +51,41 @@ function analyzeChanges(
 	const modified: string[] = [];
 	const removed: string[] = [];
 
-	const currentKeys = new Set(Object.keys(current));
-	const updatedKeys = new Set(Object.keys(updated));
+	function compare(
+		curr: Record<string, unknown>,
+		upd: Record<string, unknown>,
+		prefix: string,
+	): void {
+		const currKeys = new Set(Object.keys(curr));
+		const updKeys = new Set(Object.keys(upd));
 
-	for (const key of updatedKeys) {
-		if (!currentKeys.has(key)) {
-			added.push(key);
-		} else if (JSON.stringify(current[key]) !== JSON.stringify(updated[key])) {
-			modified.push(key);
+		for (const key of updKeys) {
+			const path = prefix ? `${prefix}.${key}` : key;
+			if (!currKeys.has(key)) {
+				added.push(path);
+			} else if (
+				typeof curr[key] === "object" &&
+				curr[key] !== null &&
+				!Array.isArray(curr[key]) &&
+				typeof upd[key] === "object" &&
+				upd[key] !== null &&
+				!Array.isArray(upd[key])
+			) {
+				compare(curr[key] as Record<string, unknown>, upd[key] as Record<string, unknown>, path);
+			} else if (JSON.stringify(curr[key]) !== JSON.stringify(upd[key])) {
+				modified.push(path);
+			}
+		}
+
+		for (const key of currKeys) {
+			const path = prefix ? `${prefix}.${key}` : key;
+			if (!updKeys.has(key)) {
+				removed.push(path);
+			}
 		}
 	}
 
-	for (const key of currentKeys) {
-		if (!updatedKeys.has(key)) {
-			removed.push(key);
-		}
-	}
-
+	compare(current, updated, "");
 	return { added, modified, removed };
 }
 
@@ -152,7 +170,7 @@ export const upgradeCommand = defineCommand({
 		p.intro(`${pc.cyan(pc.bold(PACKAGE_NAME))} ${pc.magenta("upgrade")} ${pc.dim(`v${VERSION}`)}`);
 
 		if (args["dry-run"]) {
-			p.log.warn(pc.yellow("Mode dry-run: aucun fichier ne sera modifié"));
+			p.log.warn(pc.yellow("Dry-run mode: no files will be modified"));
 		}
 
 		// Collect all config files to analyze
@@ -234,17 +252,17 @@ export const upgradeCommand = defineCommand({
 		}
 
 		if (toUpgrade.length === 0 && missingScripts.length === 0) {
-			p.log.success("Toutes les configurations sont à jour !");
-			p.outro(pc.dim("Rien à faire."));
+			p.log.success("All configurations are up to date!");
+			p.outro(pc.dim("Nothing to do."));
 			return;
 		}
 
 		// Show what will be updated
-		p.log.info(pc.cyan("Fichiers à mettre à jour:"));
+		p.log.info(pc.cyan("Files to update:"));
 
 		for (const { config, changes, isNew } of toUpgrade) {
 			if (isNew) {
-				p.log.step(`  ${pc.green("+")} ${config.name} ${pc.dim("(nouveau)")}`);
+				p.log.step(`  ${pc.green("+")} ${config.name} ${pc.dim("(new)")}`);
 			} else {
 				const parts: string[] = [];
 				if (changes.added.length > 0) {
@@ -265,20 +283,20 @@ export const upgradeCommand = defineCommand({
 		if (!(args.yes || args["dry-run"])) {
 			const shouldContinue = await p.confirm({
 				message: args["no-backup"]
-					? "Continuer sans backup ?"
-					: "Continuer ? (les fichiers seront sauvegardés)",
+					? "Continue without backup?"
+					: "Continue? (files will be backed up)",
 				initialValue: true,
 			});
 
 			if (!shouldContinue || p.isCancel(shouldContinue)) {
-				p.cancel("Annulé.");
+				p.cancel("Cancelled.");
 				process.exit(0);
 			}
 		}
 
 		// Perform upgrades
 		const spinner = p.spinner();
-		spinner.start("Mise à jour des configurations...");
+		spinner.start("Updating configurations...");
 
 		const results: Array<{ name: string; backupPath: string | null }> = [];
 
@@ -321,20 +339,20 @@ export const upgradeCommand = defineCommand({
 			results.push({ name: "package.json", backupPath: null });
 		}
 
-		spinner.stop("Mise à jour terminée");
+		spinner.stop("Update complete");
 
 		// Show results
-		p.log.success(pc.green(`${results.length} fichier(s) mis à jour`));
+		p.log.success(pc.green(`${results.length} file(s) updated`));
 
 		const backups = results.filter((r) => r.backupPath);
 		if (backups.length > 0) {
-			p.note(backups.map((b) => `${pc.dim(b.backupPath)}`).join("\n"), "Backups créés");
+			p.note(backups.map((b) => `${pc.dim(b.backupPath)}`).join("\n"), "Backups created");
 		}
 
 		if (args["dry-run"]) {
-			p.note("Exécutez sans --dry-run pour appliquer les changements", "Mode dry-run");
+			p.note("Run without --dry-run to apply changes", "Dry-run mode");
 		}
 
-		p.outro(pc.green("Configuration mise à jour !"));
+		p.outro(pc.green("Configuration updated!"));
 	},
 });

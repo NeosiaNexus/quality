@@ -8,4 +8,6 @@ coverage/
 .env.local
 .env.*.local
 bun.lockb
+bun.lock
+bin/cli.js
 neosianexus-quality-*.tgz

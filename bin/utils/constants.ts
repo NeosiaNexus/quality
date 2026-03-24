@@ -1,7 +1,7 @@
 /**
- * Package version - synced with package.json
+ * Package version - injected at build time from package.json via tsup define
  */
-export const VERSION = "1.0.0-beta.6";
+export const VERSION = process.env.PACKAGE_VERSION ?? "0.0.0-dev";
 
 /**
  * Package name

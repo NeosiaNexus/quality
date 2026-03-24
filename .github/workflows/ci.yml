@@ -20,6 +20,14 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -29,21 +37,31 @@ jobs:
       - name: Type check
         run: bun run typecheck
 
+      - name: Run tests
+        run: bun run test
+
       - name: Build
         run: bun run build
 
       - name: Test CLI
         run: bun run bin/cli.ts --help
 
-  # Test de compatibilité avec npm (pour les utilisateurs)
+      - name: Validate package
+        run: |
+          bun run publint
+          bun run attw
+
   compat-npm:
-    name: Compatibility (npm)
+    name: Compatibility (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run check
       - run: npm run build
@@ -54,6 +72,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
-      - run: bun pm trust --all || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm audit --production --audit-level=high

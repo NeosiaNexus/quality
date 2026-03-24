@@ -25,11 +25,12 @@
 			"!**/pnpm-lock.yaml",
 			"!**/package-lock.json",
 			"!**/bun.lockb",
+			"!**/bun.lock",
 			"!bin/**/*.js"
 		]
 	},
 	"javascript": {
-		"jsxRuntime": "reactClassic",
+		"jsxRuntime": "transparent",
 		"formatter": {
 			"quoteStyle": "double",
 			"jsxQuoteStyle": "double",
@@ -503,7 +504,9 @@
 						"noNodejsModules": "off"
 					},
 					"nursery": {
-						"noShadow": "off"
+						"noShadow": "off",
+						"noUnresolvedImports": "off",
+						"useExplicitType": "off"
 					}
 				}
 			}
@@ -529,7 +532,9 @@
 						"noExcessiveNestedTestSuites": "warn"
 					},
 					"nursery": {
-						"noShadow": "off"
+						"noShadow": "off",
+						"noUnresolvedImports": "off",
+						"useExplicitType": "off"
 					}
 				}
 			}
