@@ -11,7 +11,7 @@ import { defineCommand } from "citty";
 import pc from "picocolors";
 
 // bin/utils/constants.ts
-var VERSION = "1.0.0-beta.10";
+var VERSION = "1.0.0-beta.11";
 var PACKAGE_NAME = "@neosianexus/quality";
 
 // bin/utils/detect.ts
@@ -661,7 +661,7 @@ function executeInit(options) {
     }
   }
   {
-    const coreDeps = [PACKAGE_NAME, "@biomejs/biome", "typescript"];
+    const coreDeps = [`${PACKAGE_NAME}@${VERSION}`, "@biomejs/biome", "typescript"];
     if (!dryRun) {
       const spinner3 = p.spinner();
       spinner3.start(`Installing core dependencies (${packageManager})...`);

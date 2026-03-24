@@ -254,7 +254,7 @@ function executeInit(options: InitOptions): string[] {
 
 	// 5. Install core dependencies (quality package + biome + typescript)
 	{
-		const coreDeps = [PACKAGE_NAME, "@biomejs/biome", "typescript"];
+		const coreDeps = [`${PACKAGE_NAME}@${VERSION}`, "@biomejs/biome", "typescript"];
 
 		if (!dryRun) {
 			const spinner = p.spinner();
