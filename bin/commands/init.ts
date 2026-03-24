@@ -252,9 +252,9 @@ function executeInit(options: InitOptions): string[] {
 		}
 	}
 
-	// 5. Install core peer dependencies (biome + typescript)
+	// 5. Install core dependencies (quality package + biome + typescript)
 	{
-		const coreDeps = ["@biomejs/biome", "typescript"];
+		const coreDeps = [PACKAGE_NAME, "@biomejs/biome", "typescript"];
 
 		if (!dryRun) {
 			const spinner = p.spinner();
@@ -267,6 +267,7 @@ function executeInit(options: InitOptions): string[] {
 				spinner.stop("Core dependencies installed");
 			} else {
 				spinner.stop("Installation failed");
+				p.log.warn(pc.dim(result.output));
 				p.log.warn(`Install manually: ${pmCommands.addDev.join(" ")} ${coreDeps.join(" ")}`);
 			}
 		}

@@ -11,7 +11,7 @@ import { defineCommand } from "citty";
 import pc from "picocolors";
 
 // bin/utils/constants.ts
-var VERSION = "1.0.0-beta.8";
+var VERSION = "1.0.0-beta.9";
 var PACKAGE_NAME = "@neosianexus/quality";
 
 // bin/utils/detect.ts
@@ -661,7 +661,7 @@ function executeInit(options) {
     }
   }
   {
-    const coreDeps = ["@biomejs/biome", "typescript"];
+    const coreDeps = [PACKAGE_NAME, "@biomejs/biome", "typescript"];
     if (!dryRun) {
       const spinner3 = p.spinner();
       spinner3.start(`Installing core dependencies (${packageManager})...`);
@@ -671,6 +671,7 @@ function executeInit(options) {
         spinner3.stop("Core dependencies installed");
       } else {
         spinner3.stop("Installation failed");
+        p.log.warn(pc.dim(result.output));
         p.log.warn(`Install manually: ${pmCommands.addDev.join(" ")} ${coreDeps.join(" ")}`);
       }
     }
