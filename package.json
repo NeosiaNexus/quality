@@ -104,7 +104,7 @@
 	},
 	"dependencies": {
 		"@clack/prompts": "^0.10.0",
-		"citty": "^0.1.6",
+		"citty": "^0.2.2",
 		"deepmerge": "^4.3.1",
 		"picocolors": "^1.1.1"
 	},
