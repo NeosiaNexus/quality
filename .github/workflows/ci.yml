@@ -72,8 +72,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # Matrix intentionally lists only versions that exist on npm today.
+      # Add new minor ranges (e.g. "^2.5.0") to this list when Biome ships them.
       matrix:
-        biome: ["^2.4.0", "^2.5.0", "^2.6.0", "latest"]
+        biome: ["2.4.0", "^2.4.0", "latest"]
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
