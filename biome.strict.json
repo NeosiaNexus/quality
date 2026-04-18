@@ -1,0 +1,142 @@
+{
+	"$schema": "https://biomejs.dev/schemas/latest/schema.json",
+	"linter": {
+		"rules": {
+			"nursery": {
+				"noAmbiguousAnchorText": "error",
+				"noBeforeInteractiveScriptOutsideDocument": "error",
+				"noContinue": "warn",
+				"noDivRegex": "error",
+				"noDuplicateEnumValues": "error",
+				"noDuplicatedSpreadProps": "error",
+				"noEqualsToNull": "error",
+				"noExcessiveClassesPerFile": {
+					"level": "warn",
+					"options": { "maxClasses": 3 }
+				},
+				"noExcessiveLinesPerFile": {
+					"level": "warn",
+					"options": { "maxLines": 500 }
+				},
+				"noFloatingClasses": "error",
+				"noFloatingPromises": "error",
+				"noForIn": "error",
+				"noIncrementDecrement": "off",
+				"noJsxPropsBind": "warn",
+				"noLeakedRender": "error",
+				"noMisusedPromises": "error",
+				"noMultiAssign": "error",
+				"noMultiStr": "error",
+				"noParametersOnlyUsedInRecursion": "error",
+				"noProto": "error",
+				"noReturnAssign": "error",
+				"noScriptUrl": "error",
+				"noShadow": "error",
+				"noSyncScripts": "error",
+				"noTernary": "off",
+				"noUnnecessaryConditions": "error",
+				"noUnknownAttribute": "error",
+				"useArraySortCompare": "error",
+				"useAwaitThenable": "error",
+				"useConsistentEnumValueType": "error",
+				"useDestructuring": "warn",
+				"useErrorCause": "warn",
+				"useExhaustiveSwitchCases": "error",
+				"useExplicitType": "warn",
+				"useFind": "error",
+				"useInlineScriptId": "error",
+				"useRegexpExec": "error",
+				"useSortedClasses": "error",
+				"useSpread": "error"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": [
+				"**/*.config.ts",
+				"**/*.config.js",
+				"**/*.config.mjs",
+				"**/*.config.cjs",
+				"**/next.config.*",
+				"**/tailwind.config.*",
+				"**/postcss.config.*",
+				"**/vite.config.*",
+				"**/vitest.config.*",
+				"**/playwright.config.*",
+				"**/jest.config.*",
+				"**/tsconfig.json",
+				"**/tsconfig.*.json",
+				"**/drizzle.config.*",
+				"**/biome.json"
+			],
+			"linter": {
+				"rules": {
+					"nursery": {
+						"noShadow": "off",
+						"useExplicitType": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"**/*.test.ts",
+				"**/*.test.tsx",
+				"**/*.spec.ts",
+				"**/*.spec.tsx",
+				"**/__tests__/**",
+				"**/__mocks__/**"
+			],
+			"linter": {
+				"rules": {
+					"nursery": {
+						"noShadow": "off",
+						"useExplicitType": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/scripts/**", "**/bin/**", "**/cli/**"],
+			"linter": {
+				"rules": {
+					"nursery": {
+						"noExcessiveLinesPerFile": "off",
+						"useExplicitType": "off",
+						"noUnnecessaryConditions": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"**/app/**/page.tsx",
+				"**/app/**/layout.tsx",
+				"**/app/**/loading.tsx",
+				"**/app/**/error.tsx",
+				"**/app/**/not-found.tsx",
+				"**/app/**/template.tsx",
+				"**/app/**/default.tsx",
+				"**/app/**/route.ts",
+				"**/app/**/route.tsx",
+				"**/app/manifest.ts",
+				"**/app/sitemap.ts",
+				"**/app/robots.ts",
+				"**/app/opengraph-image.tsx",
+				"**/app/twitter-image.tsx",
+				"**/pages/**/*.tsx",
+				"**/pages/**/*.ts",
+				"**/middleware.ts",
+				"**/proxy.ts"
+			],
+			"linter": {
+				"rules": {
+					"nursery": {
+						"useExplicitType": "off"
+					}
+				}
+			}
+		}
+	]
+}

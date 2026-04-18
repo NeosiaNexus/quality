@@ -210,53 +210,6 @@
 				"noNextAsyncClientComponent": "error",
 				"noUnresolvedImports": "error"
 			},
-			"nursery": {
-				"noAmbiguousAnchorText": "error",
-				"noBeforeInteractiveScriptOutsideDocument": "error",
-				"noContinue": "warn",
-				"noDivRegex": "error",
-				"noDuplicateEnumValues": "error",
-				"noDuplicatedSpreadProps": "error",
-				"noEqualsToNull": "error",
-				"noExcessiveClassesPerFile": {
-					"level": "warn",
-					"options": { "maxClasses": 3 }
-				},
-				"noExcessiveLinesPerFile": {
-					"level": "warn",
-					"options": { "maxLines": 500 }
-				},
-				"noFloatingClasses": "error",
-				"noFloatingPromises": "error",
-				"noForIn": "error",
-				"noIncrementDecrement": "off",
-				"noJsxPropsBind": "warn",
-				"noLeakedRender": "error",
-				"noMisusedPromises": "error",
-				"noMultiAssign": "error",
-				"noMultiStr": "error",
-				"noParametersOnlyUsedInRecursion": "error",
-				"noProto": "error",
-				"noReturnAssign": "error",
-				"noScriptUrl": "error",
-				"noShadow": "error",
-				"noSyncScripts": "error",
-				"noTernary": "off",
-				"noUnnecessaryConditions": "error",
-				"noUnknownAttribute": "error",
-				"useArraySortCompare": "error",
-				"useAwaitThenable": "error",
-				"useConsistentEnumValueType": "error",
-				"useDestructuring": "warn",
-				"useErrorCause": "warn",
-				"useExhaustiveSwitchCases": "error",
-				"useExplicitType": "warn",
-				"useFind": "error",
-				"useInlineScriptId": "error",
-				"useRegexpExec": "error",
-				"useSortedClasses": "error",
-				"useSpread": "error"
-			},
 			"performance": {
 				"recommended": true,
 				"noAccumulatingSpread": "error",
@@ -503,10 +456,6 @@
 					"correctness": {
 						"noNodejsModules": "off",
 						"noUnresolvedImports": "off"
-					},
-					"nursery": {
-						"noShadow": "off",
-						"useExplicitType": "off"
 					}
 				}
 			}
@@ -531,10 +480,6 @@
 						"noExcessiveCognitiveComplexity": "off",
 						"noExcessiveNestedTestSuites": "warn"
 					},
-					"nursery": {
-						"noShadow": "off",
-						"useExplicitType": "off"
-					},
 					"correctness": {
 						"noUnresolvedImports": "off"
 					}
@@ -551,11 +496,6 @@
 					"correctness": {
 						"noNodejsModules": "off",
 						"noUnresolvedImports": "off"
-					},
-					"nursery": {
-						"noExcessiveLinesPerFile": "off",
-						"useExplicitType": "off",
-						"noUnnecessaryConditions": "off"
 					}
 				}
 			}
@@ -585,9 +525,6 @@
 				"rules": {
 					"style": {
 						"noDefaultExport": "off"
-					},
-					"nursery": {
-						"useExplicitType": "off"
 					},
 					"correctness": {
 						"noUnresolvedImports": "off"

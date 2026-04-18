@@ -1,12 +1,16 @@
 import type { ProjectType } from "./constants.js";
 
 /**
- * Generates biome.json configuration that extends from this package
+ * Generates biome.json configuration that extends from this package.
+ * When `strict` is true, also extends the opt-in nursery preset, which
+ * couples the project to a matching Biome minor version.
  */
-export function generateBiomeConfig(): Record<string, unknown> {
+export function generateBiomeConfig(strict = false): Record<string, unknown> {
 	return {
 		$schema: "https://biomejs.dev/schemas/latest/schema.json",
-		extends: ["@neosianexus/quality"],
+		extends: strict
+			? ["@neosianexus/quality", "@neosianexus/quality/strict"]
+			: ["@neosianexus/quality"],
 	};
 }
 
@@ -48,7 +52,12 @@ export function generateTsConfig(type: ProjectType): Record<string, unknown> {
 }
 
 /**
- * Generates commitlint.config.js content
+ * Generates commitlint.config.mjs content.
+ *
+ * Emitted as .mjs (not .js) so it loads as ESM regardless of whether the
+ * consumer's package.json declares `"type": "module"`. A .js file with
+ * `export default` fails on projects without `"type": "module"`, forcing
+ * users to rename it manually.
  */
 export function generateCommitlintConfig(): string {
 	return `import config from "@neosianexus/quality/commitlint";
@@ -312,7 +321,9 @@ export function getPackageScripts(options: {
  */
 export function getLintStagedConfig(): Record<string, string[]> {
 	return {
-		"*.{js,jsx,ts,tsx,json,css,md}": ["biome check --write --unsafe --no-errors-on-unmatched"],
+		"*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,css,md}": [
+			"biome check --write --unsafe --no-errors-on-unmatched",
+		],
 	};
 }
 

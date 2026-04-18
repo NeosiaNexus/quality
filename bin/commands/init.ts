@@ -40,6 +40,7 @@ interface InitOptions {
 	vscode: boolean;
 	knip: boolean;
 	claudeMd: boolean;
+	strict: boolean;
 	force: boolean;
 	dryRun: boolean;
 }
@@ -122,6 +123,11 @@ async function promptInitOptions(defaults: {
 					message: "Add Knip (dead code detection)?",
 					initialValue: true,
 				}),
+			strict: () =>
+				p.confirm({
+					message: "Enable strict (nursery) preset? Requires matching @biomejs/biome version.",
+					initialValue: false,
+				}),
 			claudeMd: () =>
 				p.confirm({
 					message: "Create CLAUDE.md (instructions for Claude Code)?",
@@ -152,6 +158,7 @@ function executeInit(options: InitOptions): string[] {
 		vscode,
 		knip,
 		claudeMd,
+		strict,
 		force,
 		dryRun,
 	} = options;
@@ -164,9 +171,9 @@ function executeInit(options: InitOptions): string[] {
 	const biomePath = join(cwd, "biome.json");
 	if (!fileExists(biomePath) || force) {
 		if (!dryRun) {
-			writeJsonFile(biomePath, generateBiomeConfig());
+			writeJsonFile(biomePath, generateBiomeConfig(strict));
 		}
-		tasks.push("biome.json");
+		tasks.push(strict ? "biome.json (strict)" : "biome.json");
 	}
 
 	// 2. Create tsconfig.json
@@ -340,12 +347,12 @@ function executeInit(options: InitOptions): string[] {
 
 	// 7. Create commitlint config
 	if (commitlint) {
-		const commitlintPath = join(cwd, "commitlint.config.js");
+		const commitlintPath = join(cwd, "commitlint.config.mjs");
 		if (!fileExists(commitlintPath) || force) {
 			if (!dryRun) {
 				writeFile(commitlintPath, generateCommitlintConfig());
 			}
-			tasks.push("commitlint.config.js");
+			tasks.push("commitlint.config.mjs");
 		}
 	}
 
@@ -437,6 +444,12 @@ export const initCommand = defineCommand({
 			description: "Add Knip for dead code detection",
 			default: undefined,
 		},
+		strict: {
+			type: "boolean",
+			alias: "s",
+			description: "Enable strict (nursery) preset (requires matching Biome version)",
+			default: undefined,
+		},
 		"claude-md": {
 			type: "boolean",
 			description: "Create CLAUDE.md for Claude Code instructions",
@@ -478,6 +491,7 @@ export const initCommand = defineCommand({
 				vscode: !args["skip-vscode"],
 				knip: args.knip ?? true,
 				claudeMd: args["claude-md"] ?? !args["skip-claude-md"],
+				strict: args.strict ?? false,
 				force: args.force,
 				dryRun: args["dry-run"],
 			};
@@ -522,6 +536,10 @@ export const initCommand = defineCommand({
 				`  ${pc.dim(pmRun)} check:fix  ${pc.dim("# Auto-fix")}`,
 				`  ${pc.dim(pmRun)} typecheck  ${pc.dim("# TypeScript")}`,
 				options.knip ? `  ${pc.dim(pmRun)} knip       ${pc.dim("# Dead code")}` : "",
+				"",
+				options.strict
+					? `${pc.yellow("Strict preset enabled")} ${pc.dim("- keep @biomejs/biome pinned to match this package")}`
+					: `${pc.dim("Tip: Add nursery rules with")} quality init --strict`,
 				"",
 				options.commitlint
 					? [

@@ -1,8 +1,8 @@
 {
 	"$schema": "https://biomejs.dev/schemas/latest/schema.json",
-	"extends": ["./biome.json"],
+	"extends": ["./biome.json", "./biome.strict.json"],
 	"files": {
-		"includes": ["**", "!bin/**/*.js"]
+		"includes": ["**", "!bin/**/*.js", "!.github/fixtures/**"]
 	},
 	"overrides": [
 		{

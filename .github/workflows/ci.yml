@@ -67,6 +67,27 @@ jobs:
       - run: npm run build
       - run: node bin/cli.js --help
 
+  compat-biome:
+    name: Biome ${{ matrix.biome }} (stable preset)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        biome: ["^2.4.0", "^2.5.0", "^2.6.0", "latest"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install @biomejs/biome
+        working-directory: .github/fixtures/stable-preset
+        env:
+          BIOME_VERSION: ${{ matrix.biome }}
+        run: bun add --dev "@biomejs/biome@$BIOME_VERSION"
+      - name: Validate stable preset parses with installed Biome
+        working-directory: .github/fixtures/stable-preset
+        run: bunx biome check .
+
   security:
     name: Security Audit
     runs-on: ubuntu-latest

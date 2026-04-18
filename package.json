@@ -23,6 +23,9 @@
 		"./package.json": "./package.json",
 		"./biome.json": "./biome.json",
 		"./biome": "./biome.json",
+		"./strict": "./biome.strict.json",
+		"./biome.strict": "./biome.strict.json",
+		"./biome.strict.json": "./biome.strict.json",
 		"./tsconfig.base": "./tsconfig.base.json",
 		"./tsconfig.react": "./tsconfig.react.json",
 		"./tsconfig.nextjs": "./tsconfig.nextjs.json",
@@ -36,6 +39,7 @@
 	},
 	"files": [
 		"biome.json",
+		"biome.strict.json",
 		"tsconfig.base.json",
 		"tsconfig.react.json",
 		"tsconfig.nextjs.json",
@@ -47,7 +51,7 @@
 	"scripts": {
 		"build": "tsup",
 		"prepublishOnly": "bun run validate && bun run build && bun run publint",
-		"validate": "bun run check && bun run typecheck && bun run knip",
+		"validate": "bun run check && bun run typecheck && bun run knip && bun run test",
 		"lint": "biome lint --config-path=biome.dev.json .",
 		"lint:fix": "biome lint --config-path=biome.dev.json --write --unsafe .",
 		"format": "biome format --config-path=biome.dev.json --write .",

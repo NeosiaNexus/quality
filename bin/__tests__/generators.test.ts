@@ -16,6 +16,11 @@ describe("generateBiomeConfig", () => {
 		expect(config.$schema).toBe("https://biomejs.dev/schemas/latest/schema.json");
 		expect(config.extends).toEqual(["@neosianexus/quality"]);
 	});
+
+	it("should extend the strict preset when strict=true", () => {
+		const config = generateBiomeConfig(true);
+		expect(config.extends).toEqual(["@neosianexus/quality", "@neosianexus/quality/strict"]);
+	});
 });
 
 describe("generateTsConfig", () => {
@@ -200,17 +205,17 @@ describe("getPackageScripts", () => {
 });
 
 describe("getLintStagedConfig", () => {
+	const expectedGlob = "*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,css,md}";
+
 	it("should return correct biome check command for staged files", () => {
 		const config = getLintStagedConfig();
-		expect(config["*.{js,jsx,ts,tsx,json,css,md}"]).toEqual([
-			"biome check --write --unsafe --no-errors-on-unmatched",
-		]);
+		expect(config[expectedGlob]).toEqual(["biome check --write --unsafe --no-errors-on-unmatched"]);
 	});
 
 	it("should only have one glob pattern", () => {
 		const config = getLintStagedConfig();
 		const keys = Object.keys(config);
 		expect(keys).toHaveLength(1);
-		expect(keys[0]).toBe("*.{js,jsx,ts,tsx,json,css,md}");
+		expect(keys[0]).toBe(expectedGlob);
 	});
 });

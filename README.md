@@ -10,6 +10,7 @@ A comprehensive, enterprise-grade configuration package that provides **ultra-st
 
 ## Features
 
+- **Two-tier Biome presets** - `stable` (version-safe, survives Biome minor bumps) + opt-in `strict` (full nursery layer)
 - **Ultra-strict Biome configuration** - 100+ linting rules with maximum strictness
 - **TypeScript strict mode** - All strict flags enabled including `noUncheckedIndexedAccess`
 - **Conventional Commits** - Commitlint integration with automatic validation
@@ -62,6 +63,7 @@ The CLI will guide you through:
    - Git hooks (Husky + lint-staged)
    - VS Code configuration
    - Dead code detection (Knip)
+   - Strict (nursery) preset
    - CLAUDE.md for AI assistants
 
 ### Non-Interactive Setup
@@ -113,6 +115,7 @@ quality init [options]
 | `--skip-husky` | | Skip Husky and lint-staged setup |
 | `--skip-vscode` | | Skip VS Code configuration |
 | `--knip` | `-k` | Enable Knip for dead code detection |
+| `--strict` | `-s` | Enable the strict (nursery) preset — requires matching Biome version |
 | `--claude-md` | | Generate CLAUDE.md for AI assistants |
 | `--skip-claude-md` | | Skip CLAUDE.md generation |
 | `--dry-run` | `-d` | Preview changes without writing files |
@@ -145,6 +148,9 @@ When you run `quality init` without flags, you'll see an interactive wizard:
 │  Yes / No
 │
 ◇  Add Knip (dead code detection)?
+│  Yes / No
+│
+◇  Enable strict (nursery) preset? Requires matching @biomejs/biome version.
 │  Yes / No
 │
 ◇  Create CLAUDE.md (instructions for Claude Code)?
@@ -186,7 +192,7 @@ npx @neosianexus/quality init --yes --skip-husky --skip-vscode
    - Verifies if Git is initialized
 
 2. **Configuration Generation**
-   - Creates `biome.json` extending the strict preset
+   - Creates `biome.json` extending the stable preset (adds the strict preset too if `--strict` is passed)
    - Creates `tsconfig.json` with path aliases (`@/*` → `src/*`)
    - Optionally creates commitlint, Knip, VS Code configs
 
@@ -269,8 +275,7 @@ npx @neosianexus/quality upgrade --yes --no-backup
 ◇  Files to update:
 │
 │  biome.json
-│    + linter.rules.nursery.noSecrets: "error"
-│    + linter.rules.nursery.useImportRestrictions: "error"
+│    + linter.rules.security.noSecrets: "error"
 │    ~ formatter.lineWidth: 80 → 100
 │
 │  tsconfig.json
@@ -316,7 +321,7 @@ quality [command] [options]
 |------|-------------|
 | `biome.json` | Ultra-strict linting and formatting rules |
 | `tsconfig.json` | TypeScript configuration with path aliases |
-| `commitlint.config.js` | Conventional Commits validation (optional) |
+| `commitlint.config.mjs` | Conventional Commits validation (optional) |
 | `.vscode/settings.json` | VS Code editor settings (optional) |
 | `.vscode/extensions.json` | Recommended extensions (optional) |
 | `knip.json` | Dead code detection config (optional) |
@@ -383,11 +388,43 @@ You can import and extend the provided configurations directly:
 
 ### Biome
 
+Two presets are shipped:
+
+| Preset | Import | What you get | Version coupling |
+|---|---|---|---|
+| **Stable** (default) | `@neosianexus/quality` | All stable Biome groups (`recommended` + ultra-strict overrides) | Forward-compatible with any `@biomejs/biome` `>=2.4.0` |
+| **Strict** (opt-in) | `@neosianexus/quality/strict` | Adds the full nursery layer (`noFloatingPromises`, `useSortedClasses`, `noShadow`, `useExplicitType`, …) | **Tightly coupled** — must match the `@biomejs/biome` version the package was built against |
+
+Use only the stable preset if you want a setup that survives Biome minor bumps without any action from you:
+
 ```json
 {
   "extends": ["@neosianexus/quality"]
 }
 ```
+
+Layer the strict preset on top when you want the bleeding-edge nursery rules (and accept the coupling):
+
+```json
+{
+  "extends": ["@neosianexus/quality", "@neosianexus/quality/strict"]
+}
+```
+
+> **Why the split?** Biome maintainers explicitly state that nursery rules are **not covered by semantic versioning** and can be promoted, renamed, or removed between minor versions. Shipping them inside the default preset means every consumer inherits the churn. Keeping them behind an opt-in lets you upgrade Biome freely without surprise "unknown rule" errors.
+
+#### Migrating from an earlier version
+
+Earlier versions shipped nursery rules inside the default preset. If you were relying on them and want to keep the same set of rules enforced, add the strict preset to your `extends`:
+
+```diff
+{
+-  "extends": ["@neosianexus/quality"]
++  "extends": ["@neosianexus/quality", "@neosianexus/quality/strict"]
+}
+```
+
+If you're happy to drop nursery rules (Biome maintainers recommend doing so), no change is needed — your project is now forward-compatible with future Biome minor releases.
 
 ### TypeScript
 
@@ -405,10 +442,12 @@ Available TypeScript configurations:
 ### Commitlint
 
 ```javascript
-// commitlint.config.js
+// commitlint.config.mjs
 import config from "@neosianexus/quality/commitlint";
 export default config;
 ```
+
+> The `.mjs` extension forces Node to load the file as ESM regardless of whether your project declares `"type": "module"` in `package.json`. A `.js` file using `export default` fails in projects without `"type": "module"`.
 
 ### Knip
 
